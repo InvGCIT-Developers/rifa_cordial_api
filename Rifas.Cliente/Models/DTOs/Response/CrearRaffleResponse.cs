@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Rifas.Client.Models.DTOs.Request
+namespace Rifas.Client.Models.DTOs.Response
 {
-    public class CrearRaffleRequest: BaseRequest<RaffleDTO>
+    public class CrearRaffleResponse: BaseResponse<RaffleDTO>
     {
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rifas.Client.Models.DTOs.Request
 {
-    public class CrearRaffleRequest: BaseRequest<RaffleDTO>
+    public class ActualizarTicketsRequest: BaseRequest<TicketsDTO>
     {
     }
 }

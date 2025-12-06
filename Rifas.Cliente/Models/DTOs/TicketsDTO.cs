@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Rifas.Client.Models.DTOs
 {
-    public class TicktesDTO
+    public class TicketsDTO
     {
         public long Id { get; set; }
 

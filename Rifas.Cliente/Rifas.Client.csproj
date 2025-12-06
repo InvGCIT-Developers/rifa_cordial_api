@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GCIT.Core" Version="1.1.0" />
+    <PackageReference Include="GCIT.Core" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -26,9 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Helpers\" />
     <Folder Include="Interfaces\" />
-    <Folder Include="Models\DTOs\Response\" />
     <Folder Include="Services\" />
   </ItemGroup>
 
