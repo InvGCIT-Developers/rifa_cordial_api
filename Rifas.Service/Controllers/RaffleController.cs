@@ -1,16 +1,18 @@
 
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using GCIT.Core.Models.Base;
-using Rifas.Client.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
+using Rifas.Client.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace Rifas.Service.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RaffleController : ControllerBase
     {
         private readonly IRaffleService _service;

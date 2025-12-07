@@ -20,6 +20,7 @@ namespace Rifas.Client
             services.AddScoped<IRaffleService, RaffleService>();
             services.AddScoped<ITicketsService, TicketsService>();
             services.AddScoped<ITransactionsService, TransactionsService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             services.AddScoped<IRaffleRepository, RaffleRepository>();
             services.AddScoped<ITicketsRepository, TicketsRepository>();
