@@ -22,5 +22,15 @@ namespace Rifas.Client.Common
         public const string MSG_429_SERVICE_OVERLOADED = "Service overloaded";
         public const string MSG_501_METHOD_NOT_SUPPORTED = "Method not supported";
         public const string MSG_503_SERVICE_UNAVIABLE = "Service unavailable";
+
+
+        public const int HTTP_STATUS_400 = 400;
+        public const int HTTP_STATUS_401 = 401;
+        public const int HTTP_STATUS_404 = 404;
+        public const int HTTP_STATUS_403 = 403;
+        public const int HTTP_STATUS_429 = 429;
+        public const int HTTP_STATUS_500 = 500;
+        public const int HTTP_STATUS_501 = 501;
+        public const int HTTP_STATUS_503 = 503;
     }
 }

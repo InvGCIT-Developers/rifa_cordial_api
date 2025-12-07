@@ -7,7 +7,9 @@ namespace Rifas.Client.Models.DTOs.Request
 {
     public class AuthRequest
     {
-        public string Username { get; set; } = null!;
+        public string UserName { get; set; } = null!;
         public string Password { get; set; } = null!;
+        public string IP { get; set; } = null!;
+        public string WebSite { get; set; } = null!;
     }
 }
