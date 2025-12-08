@@ -1,10 +1,10 @@
-
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Rifas.Client.Services.Interfaces;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Rifas.Service.Controllers
 {
@@ -20,6 +20,7 @@ namespace Rifas.Service.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status400BadRequest)]
         public Task<AuthResponse> Login([FromBody] AuthRequest request)

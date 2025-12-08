@@ -47,8 +47,8 @@ namespace Rifas.Client.Modulos.Services
                 string sql = $"SELECT Clientes.id IDdeCliente, Clientes.dimCedula, Clientes.Cedula, Clientes.Nombre, Clientes.Apellido, Clientes.Usuario NombreUser, Clientes.clave ClaveDeCliente, Clientes.Pin, Clientes.tipoCuenta, Clientes.fnacimiento, Clientes.Pais, Clientes.Ciudad, " +
                              $"Clientes.Moneda, Agentes.defMoneda, Clientes.Direccion, Clientes.Email CorreoDeCliente, Clientes.Telefono, Clientes.Cpostal, Clientes.perfil, Clientes.validadoporFecha, Clientes.validohastaFec, Clientes.FechaIngreso, Clientes.esDemo," +
                              $"Clientes.Status, ClientesID.idcompania, ClientesID.compania, ClientesID.idPaisdependencia, ClientesID.Paisdependencia, ClientesID.idAgente IdAgente, ClientesID.NombreAgente Agente, ClientesID.idlocal, ClientesID.local," +
-                             $"ClientesID.terminal, Clientes.logeado , Clientes.PorcComision,Clientes.is2Auth, (select top 1 Nombre from [dbo].[SiteEmpresa] where LOWER([Site]) = @webSite), EmailVerificado, SMSVerificado, Clientes.Idioma, '1' Existe  " +
-                             $"FROM  Clientes INNER JOIN ClientesID ON Clientes.id = ClientesID.idCliente INNER JOIN Agentes ON Agentes.id=ClientesID.idAgente WHERE Clientes.Usuario = @UserName";
+                             $"ClientesID.terminal, Clientes.logeado , Clientes.PorcComision,Clientes.is2Auth, (select top 1 Nombre from GCITBR.dbo.[SiteEmpresa] SiteEmpresa where LOWER([Site]) = @webSite), EmailVerificado, SMSVerificado, Clientes.Idioma, '1' Existe  " +
+                             $"FROM  GCITBR.dbo.Clientes Clientes INNER JOIN GCITBR.dbo.ClientesID ClientesID ON Clientes.id = ClientesID.idCliente INNER JOIN GCITBR.dbo.Agentes Agentes ON Agentes.id=ClientesID.idAgente WHERE Clientes.Usuario = @UserName";
 
                 var connectionString = _configuration.GetConnectionString("DefaultDB");
                 using (var connection = new SqlConnection(connectionString))

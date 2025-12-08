@@ -1,9 +1,10 @@
 using GCIT.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+
+using Rifas.Client;
 using Rifas.Client.Data;
 using Rifas.Client.Modulos.Services;
 using Rifas.Client.Services.Interfaces;
@@ -12,7 +13,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// En lugar de llamar siempre a UseUrls, hazlo sólo en contenedor
+// En lugar de llamar siempre a UseUrls, hazlo sï¿½lo en contenedor
 var runningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 if (runningInContainer)
 {
@@ -29,13 +30,13 @@ builder.Services.AddInfrastructureWithContext<RifasContext>(builder.Configuratio
         }));
 
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<RifasContext>());
-
+builder.Services.AddInfrastructure(builder.Configuration);
 // CORS policy llamada "acceder"
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("acceder", policy =>
     {
-        // Ajusta orígenes según tu front-end; por defecto permite cualquier origen.
+        // Ajusta orï¿½genes segï¿½n tu front-end; por defecto permite cualquier origen.
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
@@ -53,7 +54,7 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 //    {
 //        new OpenApiSecurityScheme
 //        {
-            
+
 //            Reference = new OpenApiReference
 //            {
 //                Type = ReferenceType.SecurityScheme,
@@ -65,14 +66,14 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 //};
 
 builder.Services.AddEndpointsApiExplorer();
-// Swashbuckle: genera documentación OpenAPI y UI
+// Swashbuckle: genera documentaciï¿½n OpenAPI y UI
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Rifas API",
         Version = "v1",
-        Description = "API para la gestión de rifas, tickets y transacciones."
+        Description = "API para la gestiï¿½n de rifas, tickets y transacciones."
     });
     // JWT in Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -80,10 +81,11 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Authorization header usando el esquema Bearer. Ej: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
     });
-
+   
     //c.AddSecurityRequirement(securityReq);
 });
 
@@ -100,7 +102,7 @@ var jwtAudience = builder.Configuration["Jwt:Audience"];
 
 if (string.IsNullOrWhiteSpace(jwtKey))
 {
-    throw new InvalidOperationException("Jwt:Key no está configurado en appsettings");
+    throw new InvalidOperationException("Jwt:Key no estï¿½ configurado en appsettings");
 }
 
 var key = Encoding.UTF8.GetBytes(jwtKey);
@@ -136,10 +138,10 @@ if (app.Environment.IsDevelopment() || runningInContainer)
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Rifas API V1");
-        // c.RoutePrefix = string.Empty; // descomenta para servir UI en la raíz (/)
+        // c.RoutePrefix = string.Empty; // descomenta para servir UI en la raï¿½z (/)
     });
 
-    // Si prefieres la extensión existente:
+    // Si prefieres la extensiï¿½n existente:
     app.MapOpenApi();
 }
 
@@ -148,7 +150,7 @@ app.UseHttpsRedirection();
 // Usar CORS "acceder"
 app.UseCors("acceder");
 
-// Autenticación y autorización
+// Autenticaciï¿½n y autorizaciï¿½n
 app.UseAuthentication();
 app.UseAuthorization();
 
