@@ -14,6 +14,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Leer PathBase desde configuración o variable de entorno (opcional)
+var pathBase = builder.Configuration["PathBase"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE");
+
 // En lugar de llamar siempre a UseUrls, hazlo s�lo en contenedor
 var runningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 if (runningInContainer)
@@ -133,14 +136,25 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+// Si se configuró PathBase, registrar antes de middlewares que sirvan Swagger y controladores
+if (!string.IsNullOrWhiteSpace(pathBase))
+{
+    // Asegura que todas las rutas se sirvan con el prefijo indicado, por ejemplo "/miapp"
+    app.UsePathBase(pathBase);
+}
 
-if (app.Environment.IsDevelopment() || runningInContainer)
+if (true || app.Environment.IsDevelopment() || runningInContainer)
 {
     // Web API OpenAPI endpoints + Swagger UI
     app.UseSwagger(); // expone /swagger/v1/swagger.json
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Rifas API V1");
+        // Si hay PathBase, SwaggerEndpoint debe incluirlo para evitar 404
+        var swaggerJsonEndpoint = string.IsNullOrWhiteSpace(pathBase)
+            ? "/swagger/v1/swagger.json"
+            : pathBase.TrimEnd('/') + "/swagger/v1/swagger.json";
+
+        c.SwaggerEndpoint(swaggerJsonEndpoint, "Rifas API V1");
         // c.RoutePrefix = string.Empty; // descomenta para servir UI en la ra�z (/)
     });
 

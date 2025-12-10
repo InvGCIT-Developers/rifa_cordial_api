@@ -19,6 +19,13 @@ namespace Rifas.Service.Controllers
             _service = service;
         }
 
+        [HttpGet("/")]
+        [AllowAnonymous]
+        public string Get()
+        {
+            return "Auth Service is running...";
+        }
+
         [HttpPost("login")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
