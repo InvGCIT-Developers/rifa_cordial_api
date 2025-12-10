@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Rifas.Client.Models.DTOs.Response
 {
-    public class ListarTicketsResponse : ListadoBaseResponse<TicketsDTO>
+    public class ListarTicketsResponse : ListadoBaseResponse<TicketsListadoDTO>
     {
     }
 }

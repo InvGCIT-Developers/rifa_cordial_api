@@ -1,9 +1,10 @@
 using GCIT.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-
 using Rifas.Client;
 using Rifas.Client.Data;
 using Rifas.Client.Modulos.Services;
@@ -49,21 +50,24 @@ builder.Services.AddControllers().AddJsonOptions(o =>
         System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
-//var securityReq = new OpenApiSecurityRequirement()
-//{
-//    {
-//        new OpenApiSecurityScheme
-//        {
 
-//            Reference = new OpenApiReference
-//            {
-//                Type = ReferenceType.SecurityScheme,
-//                Id = "Bearer"
-//            }
-//        },
-//        new List<string>()
-//    }
-//};
+var openApiSecuritySchemeReference = new OpenApiSecuritySchemeReference(
+    "Bearer", // referenceId: el id del esquema de seguridad
+    null,     // OpenApiDocument: puedes pasar null si no tienes el documento
+    "JWT Bearer token" // description: una descripción opcional
+)
+{
+    Reference = new OpenApiReferenceWithDescription
+    {
+        Type = ReferenceType.SecurityScheme,
+        Id = "Bearer",
+        Description = "JWT Bearer token"
+    }
+};
+
+var openSecurityReq = new OpenApiSecurityRequirement();
+
+openSecurityReq.Add(openApiSecuritySchemeReference, new List<string>());
 
 builder.Services.AddEndpointsApiExplorer();
 // Swashbuckle: genera documentaci�n OpenAPI y UI
@@ -84,9 +88,8 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT"
-    });
-   
-    //c.AddSecurityRequirement(securityReq);
+    });    
+    //c.AddSecurityRequirement(openSecurityReq);       
 });
 
 // (Puedes mantener AddOpenApi si necesitas, no es obligatorio)

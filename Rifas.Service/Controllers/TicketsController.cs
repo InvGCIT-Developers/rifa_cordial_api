@@ -44,6 +44,7 @@ namespace Rifas.Services.Controllers
 
         [HttpPost("Listar")]
         [ProducesResponseType(typeof(ListarTicketsResponse), StatusCodes.Status200OK)]
+        [AllowAnonymous]
         public Task<ListarTicketsResponse> ListarAsync([FromBody] ListarTicketsRequest request)
             => _service.ListarAsync(request);
     }

@@ -12,7 +12,7 @@ namespace Rifas.Service.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class RaffleController : ControllerBase
     {
         private readonly IRaffleService _service;
@@ -44,6 +44,7 @@ namespace Rifas.Service.Controllers
 
         [HttpPost("Listar")]
         [ProducesResponseType(typeof(ListarRaffleResponse), StatusCodes.Status200OK)]
+        [AllowAnonymous]
         public Task<ListarRaffleResponse> ListarAsync([FromBody] ListarRaffleRequest request)
             => _service.ListarAsync(request);
     }

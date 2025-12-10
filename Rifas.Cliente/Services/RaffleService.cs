@@ -1,13 +1,16 @@
-using System;
-using System.Threading.Tasks;
 using GCIT.Core.Models.Base;
-using Rifas.Client.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Rifas.Client.Common;
+using Rifas.Client.Mappers;
+using Rifas.Client.Models.DTOs;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
+using Rifas.Client.Repositories.Interfaces;
 using Rifas.Client.Services.Interfaces;
-using Rifas.Client.Models.DTOs;
-using Microsoft.EntityFrameworkCore;
-using Rifas.Client.Mappers;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Rifas.Client.Modulos.Services
 {
@@ -191,18 +194,174 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var lista = await _repository
-                        .AllNoTracking()
-                        .Take(request.RegistrosPorPagina.Value)
-                        .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
-                        .ToListAsync();
+                // consulta base
+                var query = _repository.AllNoTracking();
+
+                // aplicar filtros opcionales si vienen en request.Filtros (misma lógica que en TicketsService)
+                if (request?.Filtros != null && request.Filtros.Any())
+                {
+                    foreach (var filtro in request.Filtros)
+                    {
+                        if (filtro == null) continue;
+
+                        var fType = filtro.GetType();
+                        var campoProp = fType.GetProperty("Campo") ?? fType.GetProperty("Field") ?? fType.GetProperty("Name") ?? fType.GetProperty("Key");
+                        var valorProp = fType.GetProperty("Valor") ?? fType.GetProperty("Value") ?? fType.GetProperty("Val");
+
+                        var campo = campoProp?.GetValue(filtro)?.ToString();
+                        var valor = valorProp?.GetValue(filtro)?.ToString();
+
+                        if (string.IsNullOrWhiteSpace(campo) || valor == null) continue;
+
+                        switch (campo.Trim().ToLowerInvariant())
+                        {
+                            case "id":
+                            case "raffleid":
+                            case "raffle_id":
+                                if (long.TryParse(valor, out var id))
+                                {
+                                    query = query.Where(x => x.Id == id);
+                                }
+                                break;
+
+                            case "title":
+                            case "nombre":
+                            case "rafflename":
+                                query = query.Where(x => x.Title.Contains(valor));
+                                break;
+
+                            case "category":
+                            case "categoria":
+                                query = query.Where(x => x.Category == (RifaCategoriaEnum)int.Parse(valor));
+                                break;
+
+                            case "isactive":
+                            case "activo":
+                                if (bool.TryParse(valor, out var isActive))
+                                {
+                                    query = query.Where(x => x.IsActive == isActive);
+                                }
+                                break;
+
+                            case "createdatfrom":
+                            case "created_from":
+                            case "createdfrom":
+                            case "createdatdesde":
+                            case "creado_desde":
+                                if (DateTime.TryParse(valor, out var createdFrom))
+                                {
+                                    query = query.Where(x => x.CreatedAt >= createdFrom);
+                                }
+                                break;
+
+                            case "createdatto":
+                            case "created_to":
+                            case "createdto":
+                            case "createdathasta":
+                            case "creado_hasta":
+                                if (DateTime.TryParse(valor, out var createdTo))
+                                {
+                                    query = query.Where(x => x.CreatedAt <= createdTo);
+                                }
+                                break;
+
+                            case "endatfrom":
+                            case "end_from":
+                            case "endfrom":
+                                if (DateTime.TryParse(valor, out var endFrom))
+                                {
+                                    query = query.Where(x => x.EndAt != null && x.EndAt >= endFrom);
+                                }
+                                break;
+
+                            case "endatto":
+                            case "end_to":
+                            case "endto":
+                                if (DateTime.TryParse(valor, out var endTo))
+                                {
+                                    query = query.Where(x => x.EndAt != null && x.EndAt <= endTo);
+                                }
+                                break;
+
+                            case "organizer":
+                            case "organizador":
+                                query = query.Where(x => x.Organizer.Contains(valor));
+                                break;
+
+                            case "pricefrom":
+                            case "price_from":
+                            case "precio_desde":
+                                if (decimal.TryParse(valor, out var pFrom))
+                                {
+                                    query = query.Where(x => x.Price != null && x.Price >= pFrom);
+                                }
+                                break;
+
+                            case "priceto":
+                            case "price_to":
+                            case "precio_hasta":
+                                if (decimal.TryParse(valor, out var pTo))
+                                {
+                                    query = query.Where(x => x.Price != null && x.Price <= pTo);
+                                }
+                                break;
+
+                            default:
+                                // ignorar filtros desconocidos
+                                break;
+                        }
+                    }
+                }
+
+                // búsqueda global en todos los campos relevantes si viene request.Buscar
+                if (!string.IsNullOrWhiteSpace(request?.Buscar))
+                {
+                    var term = request.Buscar.Trim();
+                    var isLong = long.TryParse(term, out var termLong);
+                    var isInt = int.TryParse(term, out var termInt);
+                    var isDecimal = decimal.TryParse(term, NumberStyles.Any, CultureInfo.InvariantCulture, out var termDecimal);
+                    var isDate = DateTime.TryParse(term, out var termDate);
+
+                    query = query.Where(x =>
+                        // campos string
+                        (x.Title != null && EF.Functions.Like(x.Title, $"%{term}%")) ||
+                        (x.Description != null && EF.Functions.Like(x.Description, $"%{term}%")) ||
+                        (x.ImageUrl != null && EF.Functions.Like(x.ImageUrl, $"%{term}%")) ||
+                        (x.Organizer != null && EF.Functions.Like(x.Organizer, $"%{term}%")) ||
+
+                        // búsqueda por enum nombre cuando el término no es numérico
+                        (!isInt && x.Category.ToString().Contains(term)) ||
+
+                        // comparaciones numéricas cuando el término es numérico
+                        (isLong && x.Id == termLong) ||
+                        (isInt && x.TotalTickets == termInt) ||
+                        (isInt && x.Participants == termInt) ||
+
+                        // precio comparado si decimal
+                        (isDecimal && x.Price != null && x.Price == termDecimal) ||
+
+                        // búsquedas por fecha aproximada (día)
+                        (isDate && x.CreatedAt >= termDate && x.CreatedAt < termDate.AddDays(1)) ||
+                        (isDate && x.EndAt != null && x.EndAt >= termDate && x.EndAt < termDate.AddDays(1))
+                    );
+                }
+
+                // contar después de aplicar filtros
+                var totalElementos = await query.CountAsync();
+
+                // paginación y ordenación
+                var lista = await query
+                    .OrderByDescending(x => x.Id)
+                    .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
+                    .Take(request.RegistrosPorPagina.Value)
+                    .ToListAsync();
 
                 return new ListarRaffleResponse
                 {
                     EsExitoso = true,
-                    TotalElementos = lista.Count,
+                    TotalElementos = totalElementos,
                     TamanoPagina = request.RegistrosPorPagina.Value,
-                    TotalPaginas = (int)Math.Ceiling((double)lista.Count / request.RegistrosPorPagina.Value),
+                    TotalPaginas = (int)Math.Ceiling((double)totalElementos / request.RegistrosPorPagina.Value),
                     Pagina = request.Pagina.Value,
                     FiltrosAplicados = request.Filtros,
                     OrdenarPor = "Id",
