@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Globalization;
 using GCIT.Core.Models.Base;
 using Microsoft.EntityFrameworkCore;
 using Rifas.Client.Interfaces;
@@ -191,8 +192,114 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var lista = await _repository
-                    .AllNoTracking()
+                var query = _repository.AllNoTracking();
+
+                // aplicar filtros opcionales
+                if (request?.Filtros != null && request.Filtros.Any())
+                {
+                    foreach (var filtro in request.Filtros)
+                    {
+                        if (filtro == null) continue;
+
+                        var fType = filtro.GetType();
+                        var campoProp = fType.GetProperty("Campo") ?? fType.GetProperty("Field") ?? fType.GetProperty("Name") ?? fType.GetProperty("Key");
+                        var valorProp = fType.GetProperty("Valor") ?? fType.GetProperty("Value") ?? fType.GetProperty("Val");
+
+                        var campo = campoProp?.GetValue(filtro)?.ToString();
+                        var valor = valorProp?.GetValue(filtro)?.ToString();
+
+                        if (string.IsNullOrWhiteSpace(campo) || valor == null) continue;
+
+                        switch (campo.Trim().ToLowerInvariant())
+                        {
+                            case "id":
+                            case "purchaseid":
+                            case "purchase_id":
+                                if (long.TryParse(valor, out var id))
+                                    query = query.Where(x => x.Id == id);
+                                break;
+
+                            case "raffleid":
+                            case "raffle_id":
+                                if (long.TryParse(valor, out var rId))
+                                    query = query.Where(x => x.RaffleId == rId);
+                                break;
+
+                            case "userid":
+                            case "user_id":
+                            case "user":
+                                if (long.TryParse(valor, out var uId))
+                                    query = query.Where(x => x.UserId == uId);
+                                break;
+
+                            case "rafflenumber":
+                            case "raffle_number":
+                            case "number":
+                                query = query.Where(x => EF.Functions.Like(x.RaffleNumber, $"%{valor}%"));
+                                break;
+
+                            case "isactive":
+                            case "activo":
+                                if (bool.TryParse(valor, out var isActive))
+                                    query = query.Where(x => x.IsActive == isActive);
+                                break;
+
+                            case "purchasedatefrom":
+                            case "purchase_from":
+                                if (DateTime.TryParse(valor, out var fromDt))
+                                    query = query.Where(x => x.PurchaseDate >= fromDt);
+                                break;
+
+                            case "purchasedateto":
+                            case "purchase_to":
+                                if (DateTime.TryParse(valor, out var toDt))
+                                    query = query.Where(x => x.PurchaseDate <= toDt);
+                                break;
+
+                            case "totalamountfrom":
+                            case "total_from":
+                            case "precio_desde":
+                                if (decimal.TryParse(valor, NumberStyles.Any, CultureInfo.InvariantCulture, out var tFrom))
+                                    query = query.Where(x => x.TotalAmount >= tFrom);
+                                break;
+
+                            case "totalamountto":
+                            case "total_to":
+                            case "precio_hasta":
+                                if (decimal.TryParse(valor, NumberStyles.Any, CultureInfo.InvariantCulture, out var tTo))
+                                    query = query.Where(x => x.TotalAmount <= tTo);
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                // búsqueda global
+                if (!string.IsNullOrWhiteSpace(request?.Buscar))
+                {
+                    var term = request.Buscar.Trim();
+                    var isLong = long.TryParse(term, out var termLong);
+                    var isInt = int.TryParse(term, out var termInt);
+                    var isDecimal = decimal.TryParse(term, NumberStyles.Any, CultureInfo.InvariantCulture, out var termDecimal);
+                    var isDate = DateTime.TryParse(term, out var termDate);
+
+                    query = query.Where(x =>
+                        (x.RaffleNumber != null && EF.Functions.Like(x.RaffleNumber, $"%{term}%")) ||
+                        (isLong && x.Id == termLong) ||
+                        (isLong && x.RaffleId == termLong) ||
+                        (isLong && x.UserId == termLong) ||
+                        (isInt && x.Quantity == termInt) ||
+                        (isDecimal && x.TotalAmount == termDecimal) ||
+                        (isDate && x.PurchaseDate >= termDate && x.PurchaseDate < termDate.AddDays(1)) ||
+                        (!isDecimal && x.IsActive.ToString().Contains(term))
+                    );
+                }
+
+                var totalElementos = await query.CountAsync();
+
+                var lista = await query
                     .OrderByDescending(x => x.Id)
                     .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
                     .Take(request.RegistrosPorPagina.Value)
@@ -201,9 +308,9 @@ namespace Rifas.Client.Modulos.Services
                 return new ListarPurchaseResponse
                 {
                     EsExitoso = true,
-                    TotalElementos = lista.Count,
+                    TotalElementos = totalElementos,
                     TamanoPagina = request.RegistrosPorPagina.Value,
-                    TotalPaginas = (int)Math.Ceiling((double)lista.Count / request.RegistrosPorPagina.Value),
+                    TotalPaginas = (int)Math.Ceiling((double)totalElementos / request.RegistrosPorPagina.Value),
                     Pagina = request.Pagina.Value,
                     FiltrosAplicados = request.Filtros,
                     OrdenarPor = "Id",

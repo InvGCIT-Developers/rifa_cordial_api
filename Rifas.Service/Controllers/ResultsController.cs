@@ -23,27 +23,27 @@ namespace Rifas.Client.Modulos.Controllers
 
         [HttpPost]
         [ProducesResponseType(typeof(CrearResultsResponse), StatusCodes.Status201Created)]
-        public Task<CrearResultsResponse> CrearAsync([FromBody] CrearResultsRequest request)
-            => _service.CrearAsync(request);
+        public async Task<CrearResultsResponse> CrearAsync([FromBody] CrearResultsRequest request)
+            => await _service.CrearAsync(request);
 
         [HttpPut]
         [ProducesResponseType(typeof(ActualizarResultsResponse), StatusCodes.Status200OK)]
-        public Task<ActualizarResultsResponse> ActualizarAsync([FromBody] ActualizarResultsRequest request)
-            => _service.ActualizarAsync(request);
+        public async Task<ActualizarResultsResponse> ActualizarAsync([FromBody] ActualizarResultsRequest request)
+            => await _service.ActualizarAsync(request);
 
         [HttpDelete("{id:long}")]
         [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        public Task<BaseResponse> EliminarAsync([FromRoute] long id)
-            => _service.EliminarAsync(id);
+        public async Task<BaseResponse> EliminarAsync([FromRoute] long id)
+            => await _service.EliminarAsync(id);
 
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ObtenerResultsResponse), StatusCodes.Status200OK)]
-        public Task<ObtenerResultsResponse> ObtenerPorIdAsync([FromRoute] long id)
-            => _service.ObtenerPorIdAsync(id);
+        public async Task<ObtenerResultsResponse> ObtenerPorIdAsync([FromRoute] long id)
+            => await _service.ObtenerPorIdAsync(id);
 
         [HttpPost("Listar")]
         [ProducesResponseType(typeof(ListarResultsResponse), StatusCodes.Status200OK)]
-        public Task<ListarResultsResponse> ListarAsync([FromBody] ListarResultsRequest request)
-            => _service.ListarAsync(request);
+        public async Task<ListarResultsResponse> ListarAsync([FromBody] ListarResultsRequest request)
+            => await _service.ListarAsync(request);
     }
 }

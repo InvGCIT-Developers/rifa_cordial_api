@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using GCIT.Core.Models.Base;
 using Microsoft.EntityFrameworkCore;
 using Rifas.Client.Interfaces;
@@ -9,6 +6,10 @@ using Rifas.Client.Models.DTOs;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
 using Rifas.Client.Repositories.Interfaces;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Rifas.Client.Modulos.Services
 {
@@ -191,8 +192,98 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var lista = await _repository
-                    .AllNoTracking()
+                var query = _repository.AllNoTracking();
+
+                // aplicar filtros opcionales
+                if (request?.Filtros != null && request.Filtros.Any())
+                {
+                    foreach (var filtro in request.Filtros)
+                    {
+                        if (filtro == null) continue;
+
+                        var fType = filtro.GetType();
+                        var campoProp = fType.GetProperty("Campo") ?? fType.GetProperty("Field") ?? fType.GetProperty("Name") ?? fType.GetProperty("Key");
+                        var valorProp = fType.GetProperty("Valor") ?? fType.GetProperty("Value") ?? fType.GetProperty("Val");
+
+                        var campo = campoProp?.GetValue(filtro)?.ToString();
+                        var valor = valorProp?.GetValue(filtro)?.ToString();
+
+                        if (string.IsNullOrWhiteSpace(campo) || valor == null) continue;
+
+                        switch (campo.Trim().ToLowerInvariant())
+                        {
+                            case "id":
+                            case "resultid":
+                            case "result_id":
+                                if (long.TryParse(valor, out var id))
+                                    query = query.Where(x => x.Id == id);
+                                break;
+
+                            case "raffleid":
+                            case "raffle_id":
+                                if (long.TryParse(valor, out var rId))
+                                    query = query.Where(x => x.RaffleId == rId);
+                                break;
+
+                            case "rafflenumber":
+                            case "raffle_number":
+                                query = query.Where(x => EF.Functions.Like(x.RaffleNumber, $"%{valor}%"));
+                                break;
+
+                            case "winningnumber":
+                            case "winning_number":
+                                query = query.Where(x => EF.Functions.Like(x.WinningNumber, $"%{valor}%"));
+                                break;
+
+                            case "isactive":
+                            case "activo":
+                                if (bool.TryParse(valor, out var isActive))
+                                    query = query.Where(x => x.IsActive == isActive);
+                                break;
+
+                            case "lotterydatefrom":
+                            case "lottery_from":
+                                if (DateTime.TryParse(valor, out var fromDt))
+                                    query = query.Where(x => x.LotteryDate >= fromDt);
+                                break;
+
+                            case "lotterydateto":
+                            case "lottery_to":
+                                if (DateTime.TryParse(valor, out var toDt))
+                                    query = query.Where(x => x.LotteryDate <= toDt);
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                // búsqueda global
+                if (!string.IsNullOrWhiteSpace(request?.Buscar))
+                {
+                    var term = request.Buscar.Trim();
+                    var isLong = long.TryParse(term, out var termLong);
+                    var isInt = int.TryParse(term, out var termInt);
+                    var isDecimal = decimal.TryParse(term, NumberStyles.Any, CultureInfo.InvariantCulture, out var termDecimal);
+                    var isDate = DateTime.TryParse(term, out var termDate);
+
+                    query = query.Where(x =>
+                        (x.RaffleNumber != null && EF.Functions.Like(x.RaffleNumber, $"%{term}%")) ||
+                        (x.WinningNumber != null && EF.Functions.Like(x.WinningNumber, $"%{term}%")) ||
+                        (x.FirstPlace != null && EF.Functions.Like(x.FirstPlace, $"%{term}%")) ||
+                        (x.SecondPlace != null && EF.Functions.Like(x.SecondPlace, $"%{term}%")) ||
+                        (x.ThirdPlace != null && EF.Functions.Like(x.ThirdPlace, $"%{term}%")) ||
+                        (isLong && x.Id == termLong) ||
+                        (isLong && x.RaffleId == termLong) ||
+                        (isDate && x.LotteryDate >= termDate && x.LotteryDate < termDate.AddDays(1)) ||
+                        (!isDecimal && x.IsActive.ToString().Contains(term))
+                    );
+                }
+
+                var totalElementos = await query.CountAsync();
+
+                var lista = await query
                     .OrderByDescending(x => x.Id)
                     .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
                     .Take(request.RegistrosPorPagina.Value)
@@ -201,9 +292,9 @@ namespace Rifas.Client.Modulos.Services
                 return new ListarResultsResponse
                 {
                     EsExitoso = true,
-                    TotalElementos = lista.Count,
+                    TotalElementos = totalElementos,
                     TamanoPagina = request.RegistrosPorPagina.Value,
-                    TotalPaginas = (int)Math.Ceiling((double)lista.Count / request.RegistrosPorPagina.Value),
+                    TotalPaginas = (int)Math.Ceiling((double)totalElementos / request.RegistrosPorPagina.Value),
                     Pagina = request.Pagina.Value,
                     FiltrosAplicados = request.Filtros,
                     OrdenarPor = "Id",
