@@ -13,6 +13,24 @@ namespace Rifas.Client.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
+        [StringLength(6)]
+        public string? RaffleNumber { get; set; } 
+
+        public int? level { get; set; }
+
+        public int? TopNUmber { get; set; }
+
+        public int? BottomNumber { get; set; }
+
+        /// <summary>
+        /// garantizar el resultado ganador
+        /// </summary>
+        public bool? GarantedWinner { get; set; }
+
+        /// <summary>
+        /// monto del activo (ej. 1500.00)
+        /// </summary>
+        public decimal? AmountActive { get; set; }
         /// <summary>
         /// ruta de la imagen
         /// </summary>

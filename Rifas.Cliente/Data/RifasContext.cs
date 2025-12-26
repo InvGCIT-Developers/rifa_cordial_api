@@ -21,6 +21,8 @@ namespace Rifas.Client.Data
         public virtual DbSet<TransactionsEntity> Transactions { get; set; }
         public virtual DbSet<RaffleEntity> Raffles { get; set; }
         public virtual DbSet<TicketsEntity> Tickets { get; set; }
+        public virtual DbSet<ResultsEntity> Results { get; set; }
+        public virtual DbSet<PurchaseEntity> Purchases { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

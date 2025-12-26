@@ -15,6 +15,12 @@ namespace Rifas.Client.Mappers
             return new RaffleDTO
             {
                 Id = src.Id,
+                RaffleNumber = src.RaffleNumber,
+                level = src.level,
+                TopNUmber = src.TopNUmber,
+                AmountActive = src.AmountActive,
+                BottomNumber = src.BottomNumber,
+                GarantedWinner = src.GarantedWinner,
                 ImageUrl = src.ImageUrl,
                 Title = src.Title,
                 Description = src.Description,
@@ -39,6 +45,12 @@ namespace Rifas.Client.Mappers
             return new RaffleEntity
             {
                 Id = src.Id,
+                RaffleNumber = src.RaffleNumber,
+                level = src.level,
+                TopNUmber = src.TopNUmber,
+                AmountActive = src.AmountActive,
+                BottomNumber = src.BottomNumber,
+                GarantedWinner = src.GarantedWinner,
                 ImageUrl = src.ImageUrl,
                 Title = src.Title,
                 Description = src.Description,
@@ -70,7 +82,7 @@ namespace Rifas.Client.Mappers
             return new TicketsDTO
             {
                 Id = src.Id,
-                RaffleId = src.RaffleId,
+                RaffleId = src.RaffleId,                
                 UserId = src.UserId,
                 TicketNumber = src.TicketNumber,
                 BuyedDate = src.BuyedDate,
@@ -160,5 +172,87 @@ namespace Rifas.Client.Mappers
 
         public static List<TransactionsEntity> ToEntityList(this IEnumerable<TransactionsDTO> source)
             => source?.Select(x => x.ToEntity()).ToList() ?? new List<TransactionsEntity>();
+
+        // Purchase
+        public static PurchaseDTO ToDto(this PurchaseEntity src)
+        {
+            if (src == null) return new PurchaseDTO();
+            return new PurchaseDTO
+            {
+                Id = src.Id,
+                UserId = src.UserId,
+                RaffleId = src.RaffleId,
+                RaffleNumber = src.RaffleNumber,
+                Quantity = src.Quantity,
+                TotalAmount = src.TotalAmount,
+                PurchaseDate = src.PurchaseDate,
+                IsActive = src.IsActive
+            };
+        }
+
+        public static PurchaseEntity ToEntity(this PurchaseDTO src)
+        {
+            if (src == null) return new PurchaseEntity();
+            return new PurchaseEntity
+            {
+                Id = src.Id,
+                UserId = src.UserId,
+                RaffleId = src.RaffleId,
+                RaffleNumber = src.RaffleNumber,
+                Quantity = src.Quantity,
+                TotalAmount = src.TotalAmount,
+                PurchaseDate = src.PurchaseDate,
+                IsActive = src.IsActive
+            };
+        }
+
+        public static List<PurchaseDTO> ToDtoList(this IEnumerable<PurchaseEntity> source)
+            => source?.Select(x => x.ToDto()).ToList() ?? new List<PurchaseDTO>();
+
+        public static List<PurchaseEntity> ToEntityList(this IEnumerable<PurchaseDTO> source)
+            => source?.Select(x => x.ToEntity()).ToList() ?? new List<PurchaseEntity>();
+
+        // Results
+        public static ResultsDTO ToDto(this ResultsEntity src)
+        {
+            if (src == null) return new ResultsDTO();
+            return new ResultsDTO
+            {
+                Id = src.Id,
+                RaffleId = src.RaffleId,
+                RaffleNumber = src.RaffleNumber,
+                WinningNumber = src.WinningNumber,
+                FirstPlace = src.FirstPlace,
+                SecondPlace = src.SecondPlace,
+                ThirdPlace = src.ThirdPlace,
+                IsActive = src.IsActive,
+                LotteryDate = src.LotteryDate,
+                CreatedAt = src.CreatedAt
+            };
+        }
+
+        public static ResultsEntity ToEntity(this ResultsDTO src)
+        {
+            if (src == null) return new ResultsEntity();
+            return new ResultsEntity
+            {
+                Id = src.Id,
+                RaffleId = src.RaffleId,
+                RaffleNumber = src.RaffleNumber,
+                WinningNumber = src.WinningNumber,
+                FirstPlace = src.FirstPlace,
+                SecondPlace = src.SecondPlace,
+                ThirdPlace = src.ThirdPlace,
+                IsActive = src.IsActive,
+                LotteryDate = src.LotteryDate,
+                CreatedAt = src.CreatedAt
+            };
+        }
+
+        public static List<ResultsDTO> ToDtoList(this IEnumerable<ResultsEntity> source)
+            => source?.Select(x => x.ToDto()).ToList() ?? new List<ResultsDTO>();
+
+        public static List<ResultsEntity> ToEntityList(this IEnumerable<ResultsDTO> source)
+            => source?.Select(x => x.ToEntity()).ToList() ?? new List<ResultsEntity>();
     }
 }
