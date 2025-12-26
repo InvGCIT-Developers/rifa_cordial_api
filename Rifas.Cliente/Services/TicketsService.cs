@@ -356,6 +356,7 @@ namespace Rifas.Client.Modulos.Services
                         TicketNumber = x.Ticket.TicketNumber,
                         Note = x.Ticket.StatusDescription,
                         Category = x.Raffle.Category,
+                        Status = x.Ticket.Status,
                         PurchasedAt = x.Ticket.BuyedDate
                     })
                     .ToListAsync();
