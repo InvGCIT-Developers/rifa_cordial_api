@@ -13,5 +13,6 @@ namespace Rifas.Client.Services.Interfaces
         Task<BaseResponse> EliminarAsync(long id);
         Task<ObtenerRafflePorIdResponse> ObtenerPorIdAsync(long id);
         Task<ListarRaffleResponse> ListarAsync(ListarRaffleRequest request);
+        Task<VerificarRaffleResponse> ExisteRaffleAsync(VerificarRaffleNumberRequest request);
     }
 }

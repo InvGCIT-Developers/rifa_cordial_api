@@ -195,10 +195,29 @@ namespace Rifas.Worker.Services
 
                         if (isGuaranteed)
                         {
-                            var sold = await ticketsRepo.AllNoTracking()
-                                .AnyAsync(t => t.RaffleId == raffle.Id && t.TicketNumber == numericWinning, cancellationToken);
-                            if (sold)
+                            //var sold = await ticketsRepo.AllNoTracking()
+                            //    .AnyAsync(t => t.RaffleId == raffle.Id && t.TicketNumber == numericWinning, cancellationToken);
+                            //if (sold)
+                            //    continue;
+
+                            var ticketsSold = await ticketsRepo.AllNoTracking()
+                                .AnyAsync(t => t.RaffleId == raffle.Id && t.TicketNumber == numericWinning);
+
+                            if (ticketsSold)
                                 continue;
+
+                            var ticketsSold2 = true;
+                            while (ticketsSold2)
+                            {
+                                num = rnd.Next(0, top + 1);
+                                numericWinning = num;
+                                winningNumber = num.ToString().PadLeft(level, '0');
+                                ticketsSold2 = await ticketsRepo.AllNoTracking()
+                                    .AnyAsync(t => t.RaffleId == raffle.Id && t.TicketNumber == numericWinning);
+
+                            }
+
+
                         }
 
                         found = true;

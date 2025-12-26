@@ -23,6 +23,13 @@ namespace Rifas.Client.Modulos.Services
             _repository = repository;
         }
 
+
+        public async Task<VerificarRaffleResponse> ExisteRaffleAsync(VerificarRaffleNumberRequest request)
+        {
+            var exists = await _repository.AllNoTracking(x => x.Id == request.RaffleId && x.RaffleNumber == request.RaffleNumber).AnyAsync();
+            return new VerificarRaffleResponse { Datos = exists, EsExitoso = true, Mensaje = "OK" };
+        }
+
         public async Task<CrearRaffleResponse> CrearAsync(CrearRaffleRequest request)
         {
             try

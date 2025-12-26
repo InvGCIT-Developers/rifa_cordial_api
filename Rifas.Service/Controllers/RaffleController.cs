@@ -37,6 +37,11 @@ namespace Rifas.Service.Controllers
         public Task<BaseResponse> EliminarAsync([FromRoute] long id)
             => _service.EliminarAsync(id);
 
+        [HttpGet("Verificar")]
+        [ProducesResponseType(typeof(VerificarRaffleResponse), StatusCodes.Status200OK)]
+        public async Task<VerificarRaffleResponse> VerificarAsync([FromQuery] VerificarRaffleNumberRequest request)
+            => await _service.ExisteRaffleAsync(request);
+
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ObtenerRafflePorIdResponse), StatusCodes.Status200OK)]
         public Task<ObtenerRafflePorIdResponse> ObtenerPorIdAsync([FromRoute] long id)
