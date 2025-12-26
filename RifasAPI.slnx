@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Rifas.Cliente/Rifas.Client.csproj" />
   <Project Path="Rifas.Service/Rifas.Service.csproj" />
+  <Project Path="Rifas.Worker/Rifas.Worker.csproj" />
 </Solution>
