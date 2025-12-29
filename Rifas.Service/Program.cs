@@ -3,16 +3,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Rifas.Client;
 using Rifas.Client.Data;
 using Rifas.Client.Modulos.Services;
 using Rifas.Client.Services.Interfaces;
+using Scalar.AspNetCore;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Leer PathBase desde configuración o variable de entorno (opcional)
 var pathBase = builder.Configuration["PathBase"] ?? Environment.GetEnvironmentVariable("ASPNETCORE_PATHBASE");
@@ -23,6 +25,8 @@ if (runningInContainer)
 {
     builder.WebHost.UseUrls("http://0.0.0.0:8080", "https://0.0.0.0:8081");
 }
+
+
 
 // Add services to the container.
 builder.Services.AddInfrastructureWithContext<RifasContext>(builder.Configuration,
@@ -145,21 +149,33 @@ if (!string.IsNullOrWhiteSpace(pathBase))
 
 if (true || app.Environment.IsDevelopment() || runningInContainer)
 {
+    
     // Web API OpenAPI endpoints + Swagger UI
     app.UseSwagger(); // expone /swagger/v1/swagger.json
-    app.UseSwaggerUI(c =>
-    {
-        // Si hay PathBase, SwaggerEndpoint debe incluirlo para evitar 404
-        var swaggerJsonEndpoint = string.IsNullOrWhiteSpace(pathBase)
-            ? "/swagger/v1/swagger.json"
-            : pathBase.TrimEnd('/') + "/swagger/v1/swagger.json";
+    //app.UseSwaggerUI(c =>
+    //{
+    //    // Si hay PathBase, SwaggerEndpoint debe incluirlo para evitar 404
+    //    var swaggerJsonEndpoint = string.IsNullOrWhiteSpace(pathBase)
+    //        ? "/swagger/v1/swagger.json"
+    //        : pathBase.TrimEnd('/') + "/swagger/v1/swagger.json";
 
-        c.SwaggerEndpoint(swaggerJsonEndpoint, "Rifas API V1");
-        // c.RoutePrefix = string.Empty; // descomenta para servir UI en la ra�z (/)
-    });
-
+    //    c.SwaggerEndpoint(swaggerJsonEndpoint, "Rifas API V1");
+    //    // c.RoutePrefix = string.Empty; // descomenta para servir UI en la ra�z (/)
+    //});
     // Si prefieres la extensi�n existente:
     app.MapOpenApi();
+    app.MapScalarApiReference("/docs", options =>
+    {
+        // ---- Opciones de personalización ----
+        options
+        .WithTitle("Documentación de RifasAPI")
+        .WithOpenApiRoutePattern($"/swagger/v1/swagger.json")
+        .WithTheme(ScalarTheme.DeepSpace);
+        options.HideClientButton = true;
+        options.WithDotNetFlag(true);
+    });
+
+    
 }
 
 app.UseHttpsRedirection();
