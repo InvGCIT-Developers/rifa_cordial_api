@@ -136,7 +136,8 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                await _repository.DeleteAsync(existing);
+                existing.Status = TicketStatusEnum.Cancelado;
+                await _repository.UpdateAsync(existing);
                 await _repository.SaveChangesAsync();
 
                 return new BaseResponse

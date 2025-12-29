@@ -1,25 +1,46 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Globalization;
+using Azure.Core;
+using GCIT.Core.Common;
+using GCIT.Core.Helpers;
+using GCIT.Core.Interfaces;
+using GCIT.Core.Models;
 using GCIT.Core.Models.Base;
+using GCIT.Core.Models.DTOs.Request;
+using GCIT.Core.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Rifas.Client.Helpers;
 using Rifas.Client.Interfaces;
 using Rifas.Client.Mappers;
 using Rifas.Client.Models.DTOs;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
+using Rifas.Client.Repositories;
 using Rifas.Client.Repositories.Interfaces;
+using Rifas.Client.Services.Interfaces;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using static Dapper.SqlMapper;
 
 namespace Rifas.Client.Modulos.Services
 {
     public class PurchaseService : IPurchaseService
     {
         private readonly IPurchaseRepository _repository;
-
-        public PurchaseService(IPurchaseRepository repository)
+        private readonly ITransacService _transService;
+        private readonly ITransactionsService _transactionsService;
+        private readonly ILogger<PurchaseService> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public PurchaseService(IPurchaseRepository repository, ITransacService transService, ITransactionsService transactionsService, ILogger<PurchaseService> logger, IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
+            _transService = transService;
+            _transactionsService = transactionsService;
+            _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<CrearPurchaseResponse> CrearAsync(CrearPurchaseRequest request)
@@ -40,7 +61,72 @@ namespace Rifas.Client.Modulos.Services
                 var entity = request.Datos.ToEntity();
                 entity.PurchaseDate = DateTime.UtcNow;
 
+                var empresa = Utils.GetEmpresa(int.Parse(entity.UserId.ToString()));
+                var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
+                var siteAgente = Utils.GetSitPorIdCliente(int.Parse(entity.UserId.ToString()));
+                Utils._cadenaRR = empresa.ConexionBD;
+                var userRR = Utils.getUserPorIDCliente(int.Parse(entity.UserId.ToString())) ?? null;
+                
+                if (userRR == null)
+                {
+                    _logger.LogError($"Usuario {entity.UserId} inexistente en la bd RYR");
+                    return null;
+                }
+
+                if (siteAgente.IsoMoneda != Common.Constantes.MONEDA_USD)
+                {
+                    var conversion = await Rifas.Client.Helpers.Helper.ConvertCurrencyAsync(entity.TotalAmount, siteAgente.IsoMoneda, Common.Constantes.MONEDA_USD);
+                    entity.TotalAmount = Math.Round(conversion, 2);
+                }
+
+                var trans = await _transService.AgregaTransaccionAsync(new AgregaTransaccionRequest
+                {
+                    tipoSaldo = Constantes.TIPOSALDO_SALDO,
+                    tipoTransaccion = Constantes.TIPOTRANS_RETIRO,
+                    tipoProducto = Constantes.TIPO_PRODUCTO,
+                    isWeb = true,
+                    monto = Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                    idcliente = 0,
+                    usuario = userRR.NombreUser,
+                    idAgente = 0,
+                    agente = userRR.SubAgente.ToLower(),
+                    idlocal = 0,
+                    descripcion = $"Compra Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                    webSite = se.Site
+                });
+
+                if (trans == null || trans?.data < 0)
+                {
+                    _logger.LogError($"Error al crear la transacción para la compra {entity.Id}");
+                    return null;
+                }
+
                 await _repository.AddAsync(entity);
+
+
+                await _transactionsService.CrearAsync(new Models.DTOs.Request.CrearTransactionsRequest
+                {
+                    Datos = new Models.DTOs.TransactionsDTO
+                    {
+                        Action = "CREAR PURCHASE",
+                        Agente = userRR.SubAgente,
+                        Amount = decimal.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)),
+                        Date = DateTime.UtcNow,
+                        AgenteId = siteAgente.idAgente,
+                        Description = $"Compra Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                        IP = Helper.GetIPAddress(accessor: _httpContextAccessor),
+                        CreatedAt = DateTime.UtcNow,
+                        RaffleId = entity.RaffleId,
+                        TicketNumber = null,
+                        RestMethod = "PurchaseService.CrearAsync",
+                        JsonRequest = JsonConvert.SerializeObject(request),
+                        Transaction = trans.ToString(),
+                        User = userRR.NombreUser,
+                        UserId = long.Parse(entity.UserId.ToString()),
+                        PlayerBalance = null
+                    }
+                });
+
                 await _repository.SaveChangesAsync();
 
                 return new CrearPurchaseResponse
@@ -131,7 +217,77 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                await _repository.DeleteAsync(existing);
+
+                var empresa = Utils.GetEmpresa(int.Parse(existing.UserId.ToString()));
+                var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
+                var siteAgente = Utils.GetSitPorIdCliente(int.Parse(existing.UserId.ToString()));
+                Utils._cadenaRR = empresa.ConexionBD;
+                var userRR = Utils.getUserPorIDCliente(int.Parse(existing.UserId.ToString())) ?? null;
+
+                if (userRR == null)
+                {
+                    _logger.LogError($"Usuario {existing.UserId} inexistente en la bd RYR");
+                    return null;
+                }
+
+                if(siteAgente.IsoMoneda != Common.Constantes.MONEDA_USD)
+                {
+                    var conversion = await Rifas.Client.Helpers.Helper.ConvertCurrencyAsync(existing.TotalAmount, siteAgente.IsoMoneda,Common.Constantes.MONEDA_USD);
+                    existing.TotalAmount = Math.Round(conversion, 2);
+                }
+
+                existing.IsActive = false;
+                await _repository.UpdateAsync(existing);
+
+                var trans = await _transService.AgregaTransaccionAsync(new AgregaTransaccionRequest
+                {
+                    tipoSaldo = Constantes.TIPOSALDO_SALDO,
+                    tipoTransaccion = Constantes.TIPOTRANS_DEPOSITO,
+                    tipoProducto = Constantes.TIPO_PRODUCTO,
+                    isWeb = true,
+                    monto = Math.Round(double.Parse(existing.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                    idcliente = 0,
+                    usuario = userRR.NombreUser,
+                    idAgente = 0,
+                    agente = userRR.SubAgente.ToLower(),
+                    idlocal = 0,
+                    descripcion = $"devolucion Rifa #{existing.RaffleNumber} - Monto: {existing.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                    webSite = se.Site
+                });
+
+                if (trans == null || trans?.data < 0)
+                {
+                    _logger.LogError($"Error al crear la transacción para la devolucion {existing.Id}");
+                    return null;
+                }
+
+                await _repository.AddAsync(existing);
+
+
+                await _transactionsService.CrearAsync(new Models.DTOs.Request.CrearTransactionsRequest
+                {
+                    Datos = new Models.DTOs.TransactionsDTO
+                    {
+                        Action = "CANCELAR PURCHASE",
+                        Agente = userRR.SubAgente,
+                        Amount = decimal.Parse(existing.TotalAmount.ToString(CultureInfo.InvariantCulture)),
+                        Date = DateTime.UtcNow,
+                        AgenteId = siteAgente.idAgente,
+                        Description = $"devolucion Rifa #{existing.RaffleNumber} - Monto: {existing.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                        IP = Helper.GetIPAddress(accessor: _httpContextAccessor),
+                        CreatedAt = DateTime.UtcNow,
+                        RaffleId = existing.RaffleId,
+                        TicketNumber = null,
+                        RestMethod = "PurchaseService.CrearAsync",
+                        JsonRequest = JsonConvert.SerializeObject(existing),
+                        Transaction = trans.ToString(),
+                        User = userRR.NombreUser,
+                        UserId = long.Parse(existing.UserId.ToString()),
+                        PlayerBalance = null
+                    }
+                });
+
+
                 await _repository.SaveChangesAsync();
 
                 return new BaseResponse

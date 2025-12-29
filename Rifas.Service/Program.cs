@@ -75,7 +75,7 @@ var openApiSecuritySchemeReference = new OpenApiSecuritySchemeReference(
 var openSecurityReq = new OpenApiSecurityRequirement();
 
 openSecurityReq.Add(openApiSecuritySchemeReference, new List<string>());
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 // Swashbuckle: genera documentaci�n OpenAPI y UI
 builder.Services.AddSwaggerGen(c =>

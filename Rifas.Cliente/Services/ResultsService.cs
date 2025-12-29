@@ -131,7 +131,8 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                await _repository.DeleteAsync(existing);
+                existing.IsActive = false;
+                await _repository.UpdateAsync(existing);
                 await _repository.SaveChangesAsync();
 
                 return new BaseResponse

@@ -32,5 +32,14 @@ namespace Rifas.Client.Common
         public const int HTTP_STATUS_500 = 500;
         public const int HTTP_STATUS_501 = 501;
         public const int HTTP_STATUS_503 = 503;
+        public const string MONEDA_USD = "USD";
+        public const string MONEDA_VES = "VES";
+        public const string MONEDA_EUR = "EUR";
+        public const string MONEDA_COP = "COP";
+        public const string MONEDA_MXN = "MXN";
+        public const string MONEDA_GBP = "GBP";
+        public const string MONEDA_BRL = "BRL";
+        public const string MONEDA_ARS = "ARS";
+        public const string MONEDA_CLP = "CLP";
     }
 }
