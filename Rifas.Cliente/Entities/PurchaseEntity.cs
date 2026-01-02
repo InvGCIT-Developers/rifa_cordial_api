@@ -19,7 +19,9 @@ namespace Rifas.Client.Entities
         public int Quantity { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime PurchaseDate { get; set; }
-
+        
         public bool IsActive { get; set; }
+
+        public virtual ICollection<TicketsEntity> Tickets { get; set; } = new List<TicketsEntity>();
     }
 }

@@ -8,7 +8,7 @@ namespace Rifas.Client.Models.DTOs
 {
     public class RaffleDTO
     {
-        public long Id { get; set; }
+        public long? Id { get; set; }
 
         [StringLength(6)]
         public string? RaffleNumber { get; set; }

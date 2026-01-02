@@ -8,9 +8,11 @@ namespace Rifas.Client.Models.DTOs
 {
     public class TicketsDTO
     {
-        public long Id { get; set; }
+        public long? Id { get; set; }
 
         public long RaffleId { get; set; }
+
+        public long? PurchaseId { get; set; }
 
         public long UserId { get; set; }
 

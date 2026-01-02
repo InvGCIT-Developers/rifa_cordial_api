@@ -7,7 +7,7 @@ namespace Rifas.Client.Models.DTOs
 {
     public class PurchaseDTO
     {
-        public long Id { get; set; }
+        public long? Id { get; set; }
         public long UserId { get; set; }
         public long RaffleId { get; set; }
 
@@ -16,6 +16,8 @@ namespace Rifas.Client.Models.DTOs
         public int Quantity { get; set; }
         public decimal TotalAmount { get; set; }
         public DateTime PurchaseDate { get; set; }
+
+        public List<TicketsDTO>? Tickets { get; set; } = new List<TicketsDTO>();
 
         public bool IsActive { get; set; }
     }

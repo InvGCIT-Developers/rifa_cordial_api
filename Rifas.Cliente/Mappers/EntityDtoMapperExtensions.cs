@@ -44,7 +44,7 @@ namespace Rifas.Client.Mappers
             if (src == null) return new RaffleEntity();
             return new RaffleEntity
             {
-                Id = src.Id,
+                Id = src.Id ?? 0,
                 RaffleNumber = src.RaffleNumber,
                 level = src.level,
                 TopNUmber = src.TopNUmber,
@@ -89,7 +89,8 @@ namespace Rifas.Client.Mappers
                 Status = src.Status,
                 StatusDescription = src.StatusDescription,
                 StatusDate = src.StatusDate,
-                CreatedAt = src.CreatedAt
+                CreatedAt = src.CreatedAt,
+                 PurchaseId = src.PurchaseId
             };
         }
 
@@ -98,7 +99,7 @@ namespace Rifas.Client.Mappers
             if (src == null) return new TicketsEntity();
             return new TicketsEntity
             {
-                Id = src.Id,
+                Id = src.Id ?? 0,
                 RaffleId = src.RaffleId,
                 UserId = src.UserId,
                 TicketNumber = src.TicketNumber,
@@ -106,7 +107,9 @@ namespace Rifas.Client.Mappers
                 Status = src.Status,
                 StatusDescription = src.StatusDescription,
                 StatusDate = src.StatusDate,
-                CreatedAt = src.CreatedAt
+                CreatedAt = src.CreatedAt,
+                PurchaseId = src.PurchaseId,
+                 
             };
         }
 
@@ -147,7 +150,7 @@ namespace Rifas.Client.Mappers
             if (src == null) return new TransactionsEntity();
             return new TransactionsEntity
             {
-                Id = src.Id,
+                Id = src.Id ?? 0,
                 RaffleId = src.RaffleId,
                 TicketNumber = src.TicketNumber,
                 UserId = src.UserId,
@@ -186,7 +189,8 @@ namespace Rifas.Client.Mappers
                 Quantity = src.Quantity,
                 TotalAmount = src.TotalAmount,
                 PurchaseDate = src.PurchaseDate,
-                IsActive = src.IsActive
+                IsActive = src.IsActive,
+                 Tickets = src.Tickets?.ToDtoList() ?? new List<TicketsDTO>()
             };
         }
 
@@ -195,7 +199,7 @@ namespace Rifas.Client.Mappers
             if (src == null) return new PurchaseEntity();
             return new PurchaseEntity
             {
-                Id = src.Id,
+                Id = src.Id ?? 0,
                 UserId = src.UserId,
                 RaffleId = src.RaffleId,
                 RaffleNumber = src.RaffleNumber,
@@ -236,7 +240,7 @@ namespace Rifas.Client.Mappers
             if (src == null) return new ResultsEntity();
             return new ResultsEntity
             {
-                Id = src.Id,
+                Id = src.Id ?? 0,
                 RaffleId = src.RaffleId,
                 RaffleNumber = src.RaffleNumber,
                 WinningNumber = src.WinningNumber,

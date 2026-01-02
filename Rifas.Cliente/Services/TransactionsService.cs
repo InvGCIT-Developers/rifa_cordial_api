@@ -28,6 +28,7 @@ namespace Rifas.Client.Modulos.Services
             {
                 if (request?.Datos == null)
                 {
+                    request?.Datos.Id = null;
                     return new CrearTransactionsResponse
                     {
                         EsExitoso = false,

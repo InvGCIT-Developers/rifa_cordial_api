@@ -15,6 +15,7 @@ namespace Rifas.Client.Entities
 
         public long RaffleId { get; set; }
 
+        public long? PurchaseId { get; set; }  // nullable si reservas antes de confirmar
         public long UserId { get; set; }
 
         public long TicketNumber { get; set; }
@@ -31,5 +32,7 @@ namespace Rifas.Client.Entities
         /// fecha de creacion del registro
         /// </summary>
         public DateTime CreatedAt { get; set; }
+
+        public virtual PurchaseEntity? Purchase { get; set; }
     }
 }

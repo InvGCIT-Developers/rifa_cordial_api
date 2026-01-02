@@ -104,9 +104,9 @@ namespace Rifas.Client.Helpers
             var client = httpClient ?? new HttpClient();
             try
             {
-                var key = "6RIJMizNJKpZMBt2NS2Gljy8D2ws8gkw";
-                client.DefaultRequestHeaders.Add("apikey", key);
-                var url = $"https://api.exchangerate.host/convert?from={Uri.EscapeDataString(fromCurrency)}&to={Uri.EscapeDataString(toCurrency)}&amount={amount.ToString(CultureInfo.InvariantCulture)}";
+                var key = "814ca1332678ca336b81784fa9f7a7cd";
+                //client.DefaultRequestHeaders.Add("apikey", key);
+                var url = $"https://api.exchangerate.host/convert?access_key={key}&from={Uri.EscapeDataString(fromCurrency)}&to={Uri.EscapeDataString(toCurrency)}&amount={amount.ToString(CultureInfo.InvariantCulture)}";
                 using var resp = await client.GetAsync(url);
                 resp.EnsureSuccessStatusCode();
                 using var stream = await resp.Content.ReadAsStreamAsync();

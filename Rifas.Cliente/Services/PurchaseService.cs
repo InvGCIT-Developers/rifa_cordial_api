@@ -24,20 +24,23 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using static Dapper.SqlMapper;
+using GCIT.Core.Extensions;
 
 namespace Rifas.Client.Modulos.Services
 {
     public class PurchaseService : IPurchaseService
     {
         private readonly IPurchaseRepository _repository;
+        private readonly ITicketsService _ticketsService;
         private readonly ITransacService _transService;
         private readonly ITransactionsService _transactionsService;
         private readonly ILogger<PurchaseService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public PurchaseService(IPurchaseRepository repository, ITransacService transService, ITransactionsService transactionsService, ILogger<PurchaseService> logger, IHttpContextAccessor httpContextAccessor)
+        public PurchaseService(IPurchaseRepository repository, ITransacService transService, ITicketsService ticketsService, ITransactionsService transactionsService, ILogger<PurchaseService> logger, IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _transService = transService;
+            _ticketsService = ticketsService;
             _transactionsService = transactionsService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
@@ -85,7 +88,7 @@ namespace Rifas.Client.Modulos.Services
                     tipoTransaccion = Constantes.TIPOTRANS_RETIRO,
                     tipoProducto = Constantes.TIPO_PRODUCTO,
                     isWeb = true,
-                    monto = Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                    monto = entity.Quantity * Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
                     idcliente = 0,
                     usuario = userRR.NombreUser,
                     idAgente = 0,
@@ -460,7 +463,7 @@ namespace Rifas.Client.Modulos.Services
                     .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
                     .Take(request.RegistrosPorPagina.Value)
                     .ToListAsync();
-
+                
                 return new ListarPurchaseResponse
                 {
                     EsExitoso = true,

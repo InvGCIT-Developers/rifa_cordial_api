@@ -7,14 +7,14 @@ using System.Text;
 
 namespace Rifas.Client.Data
 {
-    public class RifasContext: DefaultDBContext
+    public class RifasContext : DefaultDBContext
     {
         public RifasContext(DbContextOptions<RifasContext> options) : base(options)
         {
         }
-        public RifasContext():base()
+        public RifasContext() : base()
         {
-            
+
         }
 
 
@@ -26,9 +26,19 @@ namespace Rifas.Client.Data
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {             
+        {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<PurchaseEntity>()
+            .HasMany(p => p.Tickets)
+            .WithOne(t => t.Purchase)
+            .HasForeignKey(t => t.PurchaseId)
+            .OnDelete(DeleteBehavior.Restrict); // o .Cascade si prefieres borrar tickets al borrar compra
+
+            // índice único: TicketNumber por Raffle
+            modelBuilder.Entity<TicketsEntity>()
+                .HasIndex(t => new { t.RaffleId, t.TicketNumber })
+                .IsUnique();
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RifasContext).Assembly);
         }
     }

@@ -19,11 +19,13 @@ namespace Rifas.Client.Modulos.Services
     {
         private readonly ITicketsRepository _repository;
         private readonly IRaffleRepository _rafflerepository;
+        private readonly IPurchaseRepository _purchaserepository;
 
-        public TicketsService(ITicketsRepository repository, IRaffleRepository rafflerepository)
+        public TicketsService(ITicketsRepository repository, IRaffleRepository rafflerepository, IPurchaseRepository purchaserepository)
         {
             _repository = repository;
             _rafflerepository = rafflerepository;
+            _purchaserepository = purchaserepository;
         }
 
         public async Task<CrearTicketsResponse> CrearAsync(CrearTicketsRequest request)
@@ -41,10 +43,24 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
+                var purchase = _purchaserepository.AllNoTracking().Where(x => x.Id == request.Datos.PurchaseId).FirstOrDefault();
+
+                if (purchase == null)
+                {
+                    return new CrearTicketsResponse
+                    {
+                        EsExitoso = false,
+                        Mensaje = "PurchaseId no válido",
+                        CodigoError = "CREAR_TICKET_INVALID_PURCHASEID",
+                        Datos = null
+                    };
+                }
+
                 var entity = request.Datos.ToEntity();
                 entity.CreatedAt = DateTime.UtcNow;
 
                 await _repository.AddAsync(entity);
+
                 await _repository.SaveChangesAsync();
 
                 return new CrearTicketsResponse
@@ -228,7 +244,7 @@ namespace Rifas.Client.Modulos.Services
 
                         switch (campo.Trim().ToLowerInvariant())
                         {
-                            case "raffleid":                            
+                            case "raffleid":
                             case "raffle_id":
                             case "rafleid":
                                 if (long.TryParse(valor, out var rId))
@@ -302,6 +318,13 @@ namespace Rifas.Client.Modulos.Services
                                     joined = joined.Where(x => x.Ticket.BuyedDate != null && x.Ticket.BuyedDate <= toDt);
                                 }
                                 break;
+                            case "purchaseid":
+                            case "purchase_id":
+                                if (long.TryParse(valor, out var pId))
+                                {
+                                    joined = joined.Where(x => x.Ticket.PurchaseId == pId);
+                                }
+                                break;
 
                             default:
                                 // si el campo no es conocido, se ignora; se pueden añadir más casos según necesidad
@@ -352,13 +375,28 @@ namespace Rifas.Client.Modulos.Services
                     .Select(x => new TicketsListadoDTO
                     {
                         RaffleId = x.Raffle.Id,
+                        PurchaseId = x.Ticket.PurchaseId,
                         RaffleName = x.Raffle.Title,
                         RaffleImage = x.Raffle.ImageUrl,
                         TicketNumber = x.Ticket.TicketNumber,
                         Note = x.Ticket.StatusDescription,
                         Category = x.Raffle.Category,
                         Status = x.Ticket.Status,
-                        PurchasedAt = x.Ticket.BuyedDate
+                        PurchasedAt = x.Ticket.BuyedDate,
+                        Purchase = x.Ticket.PurchaseId != null ? _purchaserepository.AllNoTracking()
+                            .Where(p => p.Id == x.Ticket.PurchaseId)
+                            .Select(p => new PurchaseDTO
+                            {
+                                Id = p.Id,
+                                UserId = p.UserId,
+                                TotalAmount = p.TotalAmount,
+                                Quantity = p.Quantity,
+                                RaffleId = p.RaffleId,
+                                RaffleNumber = p.RaffleNumber,
+                                PurchaseDate = p.PurchaseDate,
+                                IsActive = p.IsActive
+                            })
+                            .FirstOrDefault() : null
                     })
                     .ToListAsync();
 
