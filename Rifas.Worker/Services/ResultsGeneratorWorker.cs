@@ -33,7 +33,7 @@ namespace Rifas.Worker.Services
             _configuration = configuration;
 
             _runOnStart = configuration.GetValue<bool>("RunOnStart", true);
-            _maxAttempts = configuration.GetValue<int>("GenerationOptions:MaxAttempts", 1000);
+            _maxAttempts = configuration.GetValue<int>("GenerationOptions:MaxAttempts", 10);
 
             var times = configuration.GetSection("WorkerSchedules").Get<string[]>() ?? Array.Empty<string>();
             foreach (var t in times)
