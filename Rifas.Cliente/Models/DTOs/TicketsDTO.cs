@@ -23,12 +23,12 @@ namespace Rifas.Client.Models.DTOs
         public TicketStatusEnum Status { get; set; }
 
         [StringLength(50)]
-        public string StatusDescription { get; set; } = null!;
+        public string StatusDescription { get; set; } = string.Empty;
 
-        public DateTime StatusDate { get; set; }
+        public DateTime StatusDate { get; set; } = DateTime.UtcNow;
         /// <summary>
         /// fecha de creacion del registro
         /// </summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

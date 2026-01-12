@@ -21,4 +21,5 @@ namespace Rifas.Client.Common
         EnProceso = 4
 
     }
+    
 }

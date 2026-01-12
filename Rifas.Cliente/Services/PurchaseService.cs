@@ -1,5 +1,6 @@
 using Azure.Core;
 using GCIT.Core.Common;
+using GCIT.Core.Extensions;
 using GCIT.Core.Helpers;
 using GCIT.Core.Interfaces;
 using GCIT.Core.Models;
@@ -20,11 +21,11 @@ using Rifas.Client.Repositories;
 using Rifas.Client.Repositories.Interfaces;
 using Rifas.Client.Services.Interfaces;
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using static Dapper.SqlMapper;
-using GCIT.Core.Extensions;
 
 namespace Rifas.Client.Modulos.Services
 {
@@ -48,6 +49,13 @@ namespace Rifas.Client.Modulos.Services
 
         public async Task<CrearPurchaseResponse> CrearAsync(CrearPurchaseRequest request)
         {
+            var entity = request.Datos.ToEntity();
+            var empresa = Utils.GetEmpresa(int.Parse(entity.UserId.ToString()));
+            var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
+            var siteAgente = Utils.GetSitPorIdCliente(int.Parse(entity.UserId.ToString()));
+            Utils._cadenaRR = empresa.ConexionBD;
+            var userRR = Utils.getUserPorIDCliente(int.Parse(entity.UserId.ToString())) ?? null;
+
             try
             {
                 if (request?.Datos == null)
@@ -61,14 +69,10 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                var entity = request.Datos.ToEntity();
+                
                 entity.PurchaseDate = DateTime.UtcNow;
 
-                var empresa = Utils.GetEmpresa(int.Parse(entity.UserId.ToString()));
-                var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
-                var siteAgente = Utils.GetSitPorIdCliente(int.Parse(entity.UserId.ToString()));
-                Utils._cadenaRR = empresa.ConexionBD;
-                var userRR = Utils.getUserPorIDCliente(int.Parse(entity.UserId.ToString())) ?? null;
+               
                 
                 if (userRR == null)
                 {
@@ -141,6 +145,30 @@ namespace Rifas.Client.Modulos.Services
             }
             catch (Exception ex)
             {
+                ///AL MOMENTO DE UN ERROR, REALIZAR LA DEVOLUCION DE LA TRANSACCION
+                var trans =
+                await _transService.AgregaTransaccionAsync(new AgregaTransaccionRequest
+                {
+                    tipoSaldo = Constantes.TIPOSALDO_SALDO,
+                    tipoTransaccion = Constantes.TIPOTRANS_DEPOSITO,
+                    tipoProducto = Constantes.TIPO_PRODUCTO,
+                    isWeb = true,
+                    monto = entity.Quantity * Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                    idcliente = 0,
+                    usuario = userRR.NombreUser,
+                    idAgente = 0,
+                    agente = userRR.SubAgente.ToLower(),                     
+                    idlocal = 0,
+                    descripcion = $"devolucion Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                    webSite = se.Site
+                });
+
+                if (trans == null || trans?.data < 0)
+                {
+                    _logger.LogError($"Error al crear la transacción para la devolucion {trans ?.mensaje}");
+                    
+                }
+
                 return new CrearPurchaseResponse
                 {
                     EsExitoso = false,

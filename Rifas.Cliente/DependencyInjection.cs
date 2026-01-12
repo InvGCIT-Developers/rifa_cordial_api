@@ -5,6 +5,7 @@ using Rifas.Client.Interfaces;
 using Rifas.Client.Modulos.Services;
 using Rifas.Client.Repositories;
 using Rifas.Client.Repositories.Interfaces;
+using Rifas.Client.Services;
 using Rifas.Client.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -24,12 +25,15 @@ namespace Rifas.Client
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPurchaseService, PurchaseService>();
             services.AddScoped<IResultsService, ResultsService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+
 
             services.AddScoped<IRaffleRepository, RaffleRepository>();
             services.AddScoped<ITicketsRepository, TicketsRepository>();
             services.AddScoped<ITransactionsRepository, TransactionsRepository>();
             services.AddScoped<IPurchaseRepository, PurchaseRepository>();
-            services.AddScoped<IResultsRepository, ResultsRepository>();	
+            services.AddScoped<IResultsRepository, ResultsRepository>();	            
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             return services;
 

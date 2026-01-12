@@ -102,10 +102,10 @@ namespace Rifas.Client.Models.DTOs
         public int OrganizerRatingCount { get; set; }
 
         /// <summary>
-        /// categoría de la rifa;
+        /// categoría de la rifa; ahora se incluye como DTO
         /// </summary>
-        [Required]
-        public RifaCategoriaEnum Category { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public CategoryDTO? Category { get; set; }
 
         /// <summary>
         /// indica si la rifa está activa

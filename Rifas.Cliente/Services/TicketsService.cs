@@ -274,7 +274,7 @@ namespace Rifas.Client.Modulos.Services
                             case "category":
                             case "categoria":
                                 // category suele ser string o enum; comparamos como string (igualdad)
-                                joined = joined.Where(x => x.Raffle.Category == (RifaCategoriaEnum)int.Parse(valor));
+                                joined = joined.Where(x => x.Raffle.Category == int.Parse(valor));
                                 break;
 
                             case "status":
@@ -391,8 +391,7 @@ namespace Rifas.Client.Modulos.Services
                                 UserId = p.UserId,
                                 TotalAmount = p.TotalAmount,
                                 Quantity = p.Quantity,
-                                RaffleId = p.RaffleId,
-                                RaffleNumber = p.RaffleNumber,
+                                RaffleId = p.RaffleId,                                
                                 PurchaseDate = p.PurchaseDate,
                                 IsActive = p.IsActive
                             })

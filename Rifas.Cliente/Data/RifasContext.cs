@@ -23,6 +23,7 @@ namespace Rifas.Client.Data
         public virtual DbSet<TicketsEntity> Tickets { get; set; }
         public virtual DbSet<ResultsEntity> Results { get; set; }
         public virtual DbSet<PurchaseEntity> Purchases { get; set; }
+        public virtual DbSet<CategoryEntity> Categories { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -39,6 +40,14 @@ namespace Rifas.Client.Data
             modelBuilder.Entity<TicketsEntity>()
                 .HasIndex(t => new { t.RaffleId, t.TicketNumber })
                 .IsUnique();
+
+            // Configurar relación entre Raffle y Category usando la propiedad FK 'Category'
+            modelBuilder.Entity<RaffleEntity>()
+                .HasOne(r => r.CategoryEntity)
+                .WithMany()
+                .HasForeignKey(r => r.Category)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RifasContext).Assembly);
         }
     }

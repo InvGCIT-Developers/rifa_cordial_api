@@ -15,11 +15,11 @@ namespace Rifas.Client.Entities
         public long RaffleId { get; set; }
 
         [StringLength(6)]
-        public string RaffleNumber { get; set; } = null!;
+        public string RaffleNumber { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public decimal TotalAmount { get; set; }
-        public DateTime PurchaseDate { get; set; }
-        
+        public DateTime PurchaseDate { get; set; } = DateTime.UtcNow;
+
         public bool IsActive { get; set; }
 
         public virtual ICollection<TicketsEntity> Tickets { get; set; } = new List<TicketsEntity>();

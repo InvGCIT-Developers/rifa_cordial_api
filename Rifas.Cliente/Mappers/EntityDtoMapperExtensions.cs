@@ -32,7 +32,7 @@ namespace Rifas.Client.Mappers
                 Organizer = src.Organizer,
                 OrganizerRating = src.OrganizerRating,
                 OrganizerRatingCount = src.OrganizerRatingCount,
-                Category = src.Category,
+                Category = src.CategoryEntity?.ToDto(),
                 IsActive = src.IsActive,
                 CreatedAt = src.CreatedAt,
                 EndAt = src.EndAt
@@ -62,7 +62,7 @@ namespace Rifas.Client.Mappers
                 Organizer = src.Organizer,
                 OrganizerRating = src.OrganizerRating,
                 OrganizerRatingCount = src.OrganizerRatingCount,
-                Category = src.Category,
+                Category = src.Category != null ? src.Category.Id ?? 0 : 0,
                 IsActive = src.IsActive,
                 CreatedAt = src.CreatedAt,
                 EndAt = src.EndAt
@@ -74,6 +74,35 @@ namespace Rifas.Client.Mappers
 
         public static List<RaffleEntity> ToEntityList(this IEnumerable<RaffleDTO> source)
             => source?.Select(x => x.ToEntity()).ToList() ?? new List<RaffleEntity>();
+
+        // Category
+        public static CategoryDTO ToDto(this CategoryEntity src)
+        {
+            if (src == null) return new CategoryDTO();
+            return new CategoryDTO
+            {
+                Id = src.Id,
+                Description = src.Description,
+                IsActive = src.IsActive
+            };
+        }
+
+        public static CategoryEntity ToEntity(this CategoryDTO src)
+        {
+            if (src == null) return new CategoryEntity();
+            return new CategoryEntity
+            {
+                Id = src.Id ?? 0,
+                Description = src.Description,
+                IsActive = src.IsActive
+            };
+        }
+
+        public static List<CategoryDTO> ToDtoList(this IEnumerable<CategoryEntity> source)
+            => source?.Select(x => x.ToDto()).ToList() ?? new List<CategoryDTO>();
+
+        public static List<CategoryEntity> ToEntityList(this IEnumerable<CategoryDTO> source)
+            => source?.Select(x => x.ToEntity()).ToList() ?? new List<CategoryEntity>();
 
         // Tickets
         public static TicketsDTO ToDto(this TicketsEntity src)
@@ -184,8 +213,7 @@ namespace Rifas.Client.Mappers
             {
                 Id = src.Id,
                 UserId = src.UserId,
-                RaffleId = src.RaffleId,
-                RaffleNumber = src.RaffleNumber,
+                RaffleId = src.RaffleId,                
                 Quantity = src.Quantity,
                 TotalAmount = src.TotalAmount,
                 PurchaseDate = src.PurchaseDate,
@@ -202,7 +230,7 @@ namespace Rifas.Client.Mappers
                 Id = src.Id ?? 0,
                 UserId = src.UserId,
                 RaffleId = src.RaffleId,
-                RaffleNumber = src.RaffleNumber,
+                RaffleNumber = string.Empty,
                 Quantity = src.Quantity,
                 TotalAmount = src.TotalAmount,
                 PurchaseDate = src.PurchaseDate,

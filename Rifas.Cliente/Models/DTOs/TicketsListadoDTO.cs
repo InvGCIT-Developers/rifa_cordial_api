@@ -14,7 +14,7 @@ namespace Rifas.Client.Models.DTOs
         public long TicketNumber { get; set; } 
         public string Note { get; set; } = null!;
 
-        public RifaCategoriaEnum Category { get; set; }
+        public long Category { get; set; }
         public TicketStatusEnum Status { get; set; }
 
         public DateTime? PurchasedAt { get; set; }

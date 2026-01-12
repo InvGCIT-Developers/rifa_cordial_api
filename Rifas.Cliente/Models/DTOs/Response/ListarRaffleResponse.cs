@@ -9,5 +9,6 @@ namespace Rifas.Client.Models.DTOs.Response
 {
     public class ListarRaffleResponse : ListadoBaseResponse<RaffleDTO>
     {
+        
     }
 }

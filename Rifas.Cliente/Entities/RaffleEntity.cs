@@ -88,9 +88,14 @@ namespace Rifas.Client.Entities
         public int OrganizerRatingCount { get; set; }
 
         /// <summary>
-        /// categoría de la rifa;
+        /// categoría de la rifa; almacena el Id de CategoryEntity
         /// </summary>
-        public RifaCategoriaEnum Category { get; set; }
+        public long Category { get; set; }
+
+        /// <summary>
+        /// navegación a la categoría
+        /// </summary>
+        public virtual CategoryEntity? CategoryEntity { get; set; }
 
         /// <summary>
         /// indica si la rifa está activa
@@ -106,5 +111,7 @@ namespace Rifas.Client.Entities
         /// fecha de finalización (opcional)
         /// </summary>
         public DateTime? EndAt { get; set; }
+
+        
     }
 }

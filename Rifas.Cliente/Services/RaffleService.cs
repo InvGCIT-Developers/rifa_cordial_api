@@ -10,6 +10,7 @@ using Rifas.Client.Services.Interfaces;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Rifas.Client.Modulos.Services
@@ -17,10 +18,12 @@ namespace Rifas.Client.Modulos.Services
     public class RaffleService : IRaffleService
     {
         private readonly IRaffleRepository _repository;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public RaffleService(IRaffleRepository repository)
+        public RaffleService(IRaffleRepository repository, ICategoryRepository categoryRepository)
         {
             _repository = repository;
+            _categoryRepository = categoryRepository;
         }
 
 
@@ -166,7 +169,8 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                // incluir CategoryEntity para que la navegación esté poblada
+                var entity = await _repository.AllNoTracking().Include(x => x.CategoryEntity).FirstOrDefaultAsync(x => x.Id == id);
                 if (entity == null)
                 {
                     return new ObtenerRafflePorIdResponse
@@ -205,6 +209,8 @@ namespace Rifas.Client.Modulos.Services
                 // consulta base
                 var query = _repository.AllNoTracking();
 
+                int? categoryFilterId = null;
+
                 // aplicar filtros opcionales si vienen en request.Filtros (misma lógica que en TicketsService)
                 if (request?.Filtros != null && request.Filtros.Any())
                 {
@@ -240,7 +246,11 @@ namespace Rifas.Client.Modulos.Services
 
                             case "category":
                             case "categoria":
-                                query = query.Where(x => x.Category == (RifaCategoriaEnum)int.Parse(valor));
+                                if (int.TryParse(valor, out var catId))
+                                {
+                                    categoryFilterId = catId;
+                                    query = query.Where(x => x.Category == catId);
+                                }
                                 break;
 
                             case "isactive":
@@ -359,12 +369,13 @@ namespace Rifas.Client.Modulos.Services
 
                 // paginación y ordenación
                 var lista = await query
+                    .Include(x => x.CategoryEntity)
                     .OrderByDescending(x => x.Id)
                     .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
                     .Take(request.RegistrosPorPagina.Value)
                     .ToListAsync();
 
-                return new ListarRaffleResponse
+                var response = new ListarRaffleResponse
                 {
                     EsExitoso = true,
                     TotalElementos = totalElementos,
@@ -376,6 +387,8 @@ namespace Rifas.Client.Modulos.Services
                     Orden = "DESC",
                     Datos = lista.ToDtoList()
                 };
+
+                return response;
             }
             catch (Exception ex)
             {

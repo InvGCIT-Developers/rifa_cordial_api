@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rifas.Client.Data;
 
@@ -11,9 +12,11 @@ using Rifas.Client.Data;
 namespace Rifas.Client.Migrations
 {
     [DbContext(typeof(RifasContext))]
-    partial class RifasContextModelSnapshot : ModelSnapshot
+    [Migration("20260112213711_fm_add_categories")]
+    partial class fm_add_categories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,8 +96,8 @@ namespace Rifas.Client.Migrations
                     b.Property<int?>("BottomNumber")
                         .HasColumnType("int");
 
-                    b.Property<long>("Category")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -160,8 +163,6 @@ namespace Rifas.Client.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Category");
 
                     b.ToTable("Raffles");
                 });
@@ -329,17 +330,6 @@ namespace Rifas.Client.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Transactions");
-                });
-
-            modelBuilder.Entity("Rifas.Client.Entities.RaffleEntity", b =>
-                {
-                    b.HasOne("Rifas.Client.Entities.CategoryEntity", "CategoryEntity")
-                        .WithMany()
-                        .HasForeignKey("Category")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CategoryEntity");
                 });
 
             modelBuilder.Entity("Rifas.Client.Entities.TicketsEntity", b =>
