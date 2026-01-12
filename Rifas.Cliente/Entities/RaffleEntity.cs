@@ -14,9 +14,10 @@ namespace Rifas.Client.Entities
         public long Id { get; set; }
 
         [StringLength(6)]
-        public string? RaffleNumber { get; set; } 
+        public string RaffleNumber { get; set; } = null!;
 
-        public int? level { get; set; }
+        [Required]
+        public int level { get; set; }
 
         public int? TopNUmber { get; set; }
 
@@ -56,12 +57,14 @@ namespace Rifas.Client.Entities
         /// <summary>
         /// precio mostrado (ej. "$5" o 5)
         /// </summary>
-        public decimal? Price { get; set; }
+        [Required]
+        public decimal Price { get; set; }
 
         /// <summary>
         /// úmero de boletos (opcional)
         /// </summary>
-        public int? TotalTickets { get; set; }
+        [Required]
+        public int TotalTickets { get; set; }
 
         /// <summary>
         /// número de participantes
@@ -97,7 +100,7 @@ namespace Rifas.Client.Entities
         /// <summary>
         /// fecha de creacion del registro
         /// </summary>
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// fecha de finalización (opcional)

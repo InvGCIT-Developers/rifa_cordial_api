@@ -163,7 +163,7 @@ namespace Rifas.Worker.Services
                         continue;
                     }
 
-                    var level = Math.Clamp(raffle.level ?? 1, 1, 6);
+                    var level = Math.Clamp(raffle.level, 1, 6);
                     var maxByLevel = (int)Math.Pow(10, level) - 1;
                     var top = raffle.TopNUmber.HasValue && raffle.TopNUmber.Value >= 0
                         ? Math.Min(raffle.TopNUmber.Value, maxByLevel)
