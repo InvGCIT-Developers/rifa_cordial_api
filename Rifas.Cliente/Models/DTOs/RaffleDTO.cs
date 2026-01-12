@@ -13,7 +13,8 @@ namespace Rifas.Client.Models.DTOs
         public long? Id { get; set; }
 
         [StringLength(6)]
-        public string RaffleNumber { get; set; } = null!;
+        [Required] // marcar como requerido
+        public string RaffleNumber { get; set; } = string.Empty; // inicializar a cadena vacía
 
         [Required]
         public int level { get; set; }
@@ -41,15 +42,15 @@ namespace Rifas.Client.Models.DTOs
         /// </summary>
         [StringLength(250)]
         [Required]
-        public string ImageUrl { get; set; } = null!;
+        public string ImageUrl { get; set; } = string.Empty;
 
         [StringLength(50)]
         [Required]
-        public string Title { get; set; } = null!;
+        public string Title { get; set; } = string.Empty;
 
         [StringLength(500)]
         [Required]
-        public string Description { get; set; } = null!;
+        public string Description { get; set; } = string.Empty;
 
         /// <summary>
         ///  cantidad vendida (ej. 720)
@@ -115,6 +116,7 @@ namespace Rifas.Client.Models.DTOs
         /// <summary>
         /// fecha de creacion del registro
         /// </summary>
+        [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
