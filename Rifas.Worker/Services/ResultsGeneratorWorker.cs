@@ -275,7 +275,15 @@ namespace Rifas.Worker.Services
 
                     //en ticketsEntity , actualizar el estado de los tickets del raffle indicando si es ganador, primer lugar, segundo lugar, tercer lugar
                     var tickets = await ticketsRepo.AllNoTracking()
-                        .Where(t => t.RaffleId == raffle.Id && t.Status == TicketStatusEnum.Confirmado && t.PurchaseId !=null)
+                        .Where(t => t.RaffleId == raffle.Id
+                        &&
+                        (t.TicketNumber == numericWinning ||
+                        t.TicketNumber.ToString().PadLeft(level, '0') == FirstPlace ||
+                        t.TicketNumber.ToString().PadLeft(level, '0') == SecondPlace ||
+                        t.TicketNumber.ToString().PadLeft(level, '0') == ThirdPlace)
+                        && t.Status == TicketStatusEnum.Confirmado 
+                        && t.PurchaseId !=null
+                        )
                         .ToListAsync();
 
                     foreach (var ticket in tickets)

@@ -42,6 +42,7 @@ namespace Rifas.Client.Modulos.Controllers
             => await _service.ObtenerPorIdAsync(id);
 
         [HttpPost("Listar")]
+        [AllowAnonymous]
         [ProducesResponseType(typeof(ListarResultsResponse), StatusCodes.Status200OK)]
         public async Task<ListarResultsResponse> ListarAsync([FromBody] ListarResultsRequest request)
             => await _service.ListarAsync(request);
