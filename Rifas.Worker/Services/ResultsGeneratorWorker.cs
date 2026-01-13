@@ -129,7 +129,7 @@ namespace Rifas.Worker.Services
 
             var now = DateTime.UtcNow;
 
-            var raffles = await raffleRepo.AllNoTracking().ToListAsync(cancellationToken);
+            var raffles = await raffleRepo.AllNoTracking(raffle => raffle.IsActive && raffle.CreatedAt <= now && raffle.EndAt.Value >= now).ToListAsync(cancellationToken);
 
             foreach (var raffle in raffles)
             {
@@ -171,6 +171,9 @@ namespace Rifas.Worker.Services
 
                     var rnd = new Random();
                     string winningNumber = null!;
+                    string FirstPlace = null!;
+                    string SecondPlace = null!;
+                    string ThirdPlace = null!;
                     long numericWinning = -1;
 
                     var isGuaranteed = raffle.AmountActive.HasValue && raffle.AmountActive.Value > raffle.Sold
@@ -187,8 +190,28 @@ namespace Rifas.Worker.Services
                         numericWinning = num;
                         winningNumber = num.ToString().PadLeft(level, '0');
 
+                        
+
+
+                        while(true)
+                        {
+                            FirstPlace = rnd.Next(0, top + 1).ToString().PadLeft(level, '0');
+                            SecondPlace = rnd.Next(0, top + 1).ToString().PadLeft(level, '0');
+                            ThirdPlace = rnd.Next(0, top + 1).ToString().PadLeft(level, '0');
+
+                            if (FirstPlace != winningNumber && 
+                                SecondPlace != winningNumber &&
+                                ThirdPlace != winningNumber &&
+                                SecondPlace != FirstPlace && 
+                                ThirdPlace != SecondPlace && 
+                                ThirdPlace != FirstPlace)
+                                break;
+                           
+                        }
+
                         var existsResult = await resultsRepo.AllNoTracking()
-                            .AnyAsync(r => r.RaffleId == raffle.Id && r.WinningNumber == winningNumber, cancellationToken);
+                            .AnyAsync(r => r.RaffleId == raffle.Id 
+                            && (r.WinningNumber == winningNumber || r.FirstPlace == FirstPlace || r.SecondPlace == SecondPlace || r.ThirdPlace == ThirdPlace), cancellationToken);
 
                         if (existsResult)
                             continue;
@@ -234,9 +257,9 @@ namespace Rifas.Worker.Services
                         RaffleId = raffle.Id,
                         RaffleNumber = raffle.RaffleNumber,
                         WinningNumber = winningNumber,
-                        FirstPlace = null,
-                        SecondPlace = null,
-                        ThirdPlace = null,
+                        FirstPlace = FirstPlace,
+                        SecondPlace = SecondPlace,
+                        ThirdPlace = ThirdPlace,
                         IsActive = true,
                         LotteryDate = now,
                         CreatedAt = now
@@ -244,6 +267,37 @@ namespace Rifas.Worker.Services
 
                     await resultsRepo.AddAsync(resultEntity);
                     await resultsRepo.SaveChangesAsync();
+
+                    raffle.IsActive = false;
+
+                    await raffleRepo.UpdateAsync(raffle);
+                    await raffleRepo.SaveChangesAsync();
+
+                    //en ticketsEntity , actualizar el estado de los tickets del raffle indicando si es ganador, primer lugar, segundo lugar, tercer lugar
+                    var tickets = await ticketsRepo.AllNoTracking()
+                        .Where(t => t.RaffleId == raffle.Id && t.PurchaseId !=null)
+                        .ToListAsync();
+
+                    foreach (var ticket in tickets)
+                    {
+                        if (ticket.TicketNumber == long.Parse(winningNumber))
+                        {
+                            ticket.State = TicketStateEnum.Ganador;
+                            
+                        }
+                        else if (ticket.TicketNumber == long.Parse(FirstPlace))
+                            ticket.State = TicketStateEnum.PrimerLugar;
+                        else if (ticket.TicketNumber == long.Parse(SecondPlace))
+                            ticket.State = TicketStateEnum.SegundoLugar;
+                        else if (ticket.TicketNumber == long.Parse(ThirdPlace))
+                            ticket.State = TicketStateEnum.TercerLugar;
+                        else
+                            ticket.State = TicketStateEnum.Perdedor;
+
+                        await ticketsRepo.UpdateAsync(ticket);
+                    }
+
+                    await ticketsRepo.SaveChangesAsync();
 
                     _logger.LogInformation("Generated result for raffle {raffleId}: {winning} (attempts: {attempts})", raffle.Id, winningNumber, attempt);
                 }

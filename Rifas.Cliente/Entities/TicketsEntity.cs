@@ -24,6 +24,8 @@ namespace Rifas.Client.Entities
 
         public TicketStatusEnum Status { get; set; }
 
+        public TicketStateEnum State { get; set; } = TicketStateEnum.SinResultado;
+
         [StringLength(50)]
         public string StatusDescription { get; set; } = string.Empty;
 

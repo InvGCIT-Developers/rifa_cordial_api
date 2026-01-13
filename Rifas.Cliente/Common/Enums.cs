@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.ComponentModel.DataAnnotations;
 
 namespace Rifas.Client.Common
 {
@@ -21,5 +22,15 @@ namespace Rifas.Client.Common
         EnProceso = 4
 
     }
-    
+
+    public enum TicketStateEnum
+    {
+        [Display(Name = "Sin resultado")] SinResultado = 0,
+        [Display(Name = "Ganador")] Ganador = 1,
+        [Display(Name = "Primer lugar")] PrimerLugar = 2,
+        [Display(Name = "Segundo lugar")] SegundoLugar = 3,
+        [Display(Name = "Tercer lugar")] TercerLugar = 4,
+        [Display(Name = "Perdedor")] Perdedor = 5
+    }
+
 }
