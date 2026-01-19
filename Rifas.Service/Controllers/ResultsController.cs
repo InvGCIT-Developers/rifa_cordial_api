@@ -11,7 +11,7 @@ namespace Rifas.Client.Modulos.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class ResultsController : ControllerBase
     {
         private readonly IResultsService _service;

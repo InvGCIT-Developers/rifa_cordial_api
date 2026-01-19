@@ -12,7 +12,7 @@ namespace Rifas.Service.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class RaffleController : ControllerBase
     {
         private readonly IRaffleService _service;
