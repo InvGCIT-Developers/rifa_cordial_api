@@ -19,18 +19,43 @@ namespace Rifas.Client.Modulos.Services
     {
         private readonly IRaffleRepository _repository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IPurchaseRepository _purchaseRepository;
+        private readonly ITicketsRepository _ticketsRepository;
 
-        public RaffleService(IRaffleRepository repository, ICategoryRepository categoryRepository)
+        public RaffleService(IRaffleRepository repository, ICategoryRepository categoryRepository, IPurchaseRepository purchaseRepository, ITicketsRepository ticketsRepository)
         {
             _repository = repository;
             _categoryRepository = categoryRepository;
+            _purchaseRepository = purchaseRepository;
+            _ticketsRepository = ticketsRepository;
         }
 
 
-        public async Task<VerificarRaffleResponse> ExisteRaffleAsync(VerificarRaffleNumberRequest request)
+        public async Task<VerificarTicketNumberResponse> DisponibleTicketNumberAsync(VerificarTicketNumberRequest request)
         {
-            var exists = await _repository.AllNoTracking(x => x.Id == request.RaffleId && x.RaffleNumber == request.RaffleNumber).AnyAsync();
-            return new VerificarRaffleResponse { Datos = exists, EsExitoso = true, Mensaje = "OK" };
+            // Implementación usando JOIN entre Raffles, Purchases y Tickets
+            // SELECT * FROM Raffles r
+            // INNER JOIN Purchases p ON r.Id = p.RaffleId
+            // INNER JOIN Tickets t ON r.Id = t.RaffleId AND p.Id = t.PurchaseId
+            // WHERE r.Id = @RaffleId AND t.TicketNumber = @TicketNumber
+
+            if (request == null) return new VerificarTicketNumberResponse { Datos = false, EsExitoso = true, Mensaje = "OK" };
+
+            
+
+            // Construir consulta LINQ con joins
+            var q = from r in _repository.AllNoTracking()
+                    join p in _purchaseRepository.AllNoTracking() on r.Id equals p.RaffleId
+                    join t in _ticketsRepository.AllNoTracking() on p.Id equals t.PurchaseId
+                    where r.Id == request.RaffleId
+                    select new { r, p, t };
+
+            
+                q = q.Where(x => x.t.TicketNumber == request.TicketNumber);
+            
+
+            var exists = await q.AnyAsync();
+            return new VerificarTicketNumberResponse { Datos = exists, EsExitoso = true, Mensaje = "OK" };
         }
 
         public async Task<CrearRaffleResponse> CrearAsync(CrearRaffleRequest request)

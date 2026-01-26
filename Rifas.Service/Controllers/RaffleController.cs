@@ -38,9 +38,9 @@ namespace Rifas.Service.Controllers
             => _service.EliminarAsync(id);
 
         [HttpGet("Verificar")]
-        [ProducesResponseType(typeof(VerificarRaffleResponse), StatusCodes.Status200OK)]
-        public async Task<VerificarRaffleResponse> VerificarAsync([FromQuery] VerificarRaffleNumberRequest request)
-            => await _service.ExisteRaffleAsync(request);
+        [ProducesResponseType(typeof(VerificarTicketNumberResponse), StatusCodes.Status200OK)]
+        public async Task<VerificarTicketNumberResponse> VerificarAsync([FromQuery] VerificarTicketNumberRequest request)
+            => await _service.DisponibleTicketNumberAsync(request);
 
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ObtenerRafflePorIdResponse), StatusCodes.Status200OK)]

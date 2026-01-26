@@ -102,10 +102,11 @@ namespace Rifas.Client.Modulos.Services
                     return null;
                 }
 
+                decimal totalAmount = 0;
                 if (siteAgente.IsoMoneda != Common.Constantes.MONEDA_USD)
                 {
                     var conversion = await Rifas.Client.Helpers.Helper.ConvertCurrencyAsync(entity.TotalAmount, siteAgente.IsoMoneda, Common.Constantes.MONEDA_USD);
-                    entity.TotalAmount = Math.Round(conversion, 2);
+                    totalAmount = Math.Round(conversion, 2);
                 }
 
                 var trans = await _transService.AgregaTransaccionAsync(new AgregaTransaccionRequest
@@ -114,13 +115,13 @@ namespace Rifas.Client.Modulos.Services
                     tipoTransaccion = Constantes.TIPOTRANS_RETIRO,
                     tipoProducto = Constantes.TIPO_PRODUCTO,
                     isWeb = true,
-                    monto = entity.Quantity * Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                    monto = entity.Quantity * Math.Round(double.Parse(totalAmount.ToString(CultureInfo.InvariantCulture)), 2),
                     idcliente = 0,
                     usuario = userRR.NombreUser,
                     idAgente = 0,
                     agente = userRR.SubAgente.ToLower(),
                     idlocal = 0,
-                    descripcion = $"Compra Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                    descripcion = $"Compra Rifa #{entity.RaffleNumber} - Monto: {totalAmount.ToString("C", CultureInfo.CurrentCulture)}",
                     webSite = se.Site
                 });
 
@@ -139,10 +140,10 @@ namespace Rifas.Client.Modulos.Services
                     {
                         Action = "CREAR PURCHASE",
                         Agente = userRR.SubAgente,
-                        Amount = decimal.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)),
+                        Amount = decimal.Parse(totalAmount.ToString(CultureInfo.InvariantCulture)),
                         Date = DateTime.UtcNow,
                         AgenteId = siteAgente.idAgente,
-                        Description = $"Compra Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                        Description = $"Compra Rifa #{entity.RaffleNumber} - Monto: {totalAmount.ToString("C", CultureInfo.CurrentCulture)}",
                         IP = Helper.GetIPAddress(accessor: _httpContextAccessor),
                         CreatedAt = DateTime.UtcNow,
                         RaffleId = entity.RaffleId,
