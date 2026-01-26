@@ -53,6 +53,10 @@ namespace Rifas.Client.Modulos.Services
             var entity = request.Datos.ToEntity();
             try
             {
+
+                if (entity.TotalAmount <= 0)
+                    throw new Exception("El monto Total debe ser mayor a cero.");
+
                 if (entity.UserId == 0)
                     throw new Exception("UserId no especificado");
 
@@ -264,8 +268,7 @@ namespace Rifas.Client.Modulos.Services
                         Mensaje = "Purchase no encontrada",
                         CodigoError = "ELIMINAR_PURCHASE_NOT_FOUND"
                     };
-                }
-
+                }                
 
                 var empresa = Utils.GetEmpresa(int.Parse(existing.UserId.ToString()));
                 if (empresa == null)
