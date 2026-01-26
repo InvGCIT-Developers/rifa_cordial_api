@@ -49,15 +49,33 @@ namespace Rifas.Client.Modulos.Services
 
         public async Task<CrearPurchaseResponse> CrearAsync(CrearPurchaseRequest request)
         {
-            var entity = request.Datos.ToEntity();
-            var empresa = Utils.GetEmpresa(int.Parse(entity.UserId.ToString()));
-            var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
-            var siteAgente = Utils.GetSitPorIdCliente(int.Parse(entity.UserId.ToString()));
-            Utils._cadenaRR = empresa.ConexionBD;
-            var userRR = Utils.getUserPorIDCliente(int.Parse(entity.UserId.ToString())) ?? null;
 
+            var entity = request.Datos.ToEntity();
             try
             {
+                if (entity.UserId == 0)
+                    throw new Exception("UserId no especificado");
+
+                var empresa = Utils.GetEmpresa(int.Parse(entity.UserId.ToString()));
+
+                if (empresa == null)
+                    throw new Exception($"El UserId = {entity.UserId}, no se encuentra registrado en ninguna empresa");
+
+                var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
+
+                if (se == null)
+                    throw new Exception($"El Rif {empresa.Rif}, no se encuentra registrado en la empresa {empresa.Nombre}");
+
+                var siteAgente = Utils.GetSitPorIdCliente(int.Parse(entity.UserId.ToString()));
+
+                if (siteAgente == null)
+                    throw new Exception($"El UserId = {entity.UserId}, no esta asignado a un site en especifico.");
+
+                Utils._cadenaRR = empresa.ConexionBD;
+                var userRR = Utils.getUserPorIDCliente(int.Parse(entity.UserId.ToString())) ?? null;
+
+                
+
                 if (request?.Datos == null)
                 {
                     return new CrearPurchaseResponse
@@ -146,28 +164,28 @@ namespace Rifas.Client.Modulos.Services
             catch (Exception ex)
             {
                 ///AL MOMENTO DE UN ERROR, REALIZAR LA DEVOLUCION DE LA TRANSACCION
-                var trans =
-                await _transService.AgregaTransaccionAsync(new AgregaTransaccionRequest
-                {
-                    tipoSaldo = Constantes.TIPOSALDO_SALDO,
-                    tipoTransaccion = Constantes.TIPOTRANS_DEPOSITO,
-                    tipoProducto = Constantes.TIPO_PRODUCTO,
-                    isWeb = true,
-                    monto = entity.Quantity * Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
-                    idcliente = 0,
-                    usuario = userRR.NombreUser,
-                    idAgente = 0,
-                    agente = userRR.SubAgente.ToLower(),                     
-                    idlocal = 0,
-                    descripcion = $"devolucion Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
-                    webSite = se.Site
-                });
+                //var trans =
+                //await _transService.AgregaTransaccionAsync(new AgregaTransaccionRequest
+                //{
+                //    tipoSaldo = Constantes.TIPOSALDO_SALDO,
+                //    tipoTransaccion = Constantes.TIPOTRANS_DEPOSITO,
+                //    tipoProducto = Constantes.TIPO_PRODUCTO,
+                //    isWeb = true,
+                //    monto = entity.Quantity * Math.Round(double.Parse(entity.TotalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                //    idcliente = 0,
+                //    usuario = userRR.NombreUser,
+                //    idAgente = 0,
+                //    agente = userRR.SubAgente.ToLower(),                     
+                //    idlocal = 0,
+                //    descripcion = $"devolucion Rifa #{entity.RaffleNumber} - Monto: {entity.TotalAmount.ToString("C", CultureInfo.CurrentCulture)}",
+                //    webSite = se.Site
+                //});
 
-                if (trans == null || trans?.data < 0)
-                {
-                    _logger.LogError($"Error al crear la transacción para la devolucion {trans ?.mensaje}");
+                //if (trans == null || trans?.data < 0)
+                //{
+                //    _logger.LogError($"Error al crear la transacción para la devolucion {trans ?.mensaje}");
                     
-                }
+                //}
 
                 return new CrearPurchaseResponse
                 {
@@ -250,8 +268,19 @@ namespace Rifas.Client.Modulos.Services
 
 
                 var empresa = Utils.GetEmpresa(int.Parse(existing.UserId.ToString()));
+                if (empresa == null)
+                    throw new Exception($"El UserId = {existing.UserId}, no se encuentra registrado en ninguna empresa");
+
                 var se = Utils.GetSiteEmpresa("", empresa.Rif.Replace("-", ""), "");
+
+                if (se == null)
+                    throw new Exception($"El Rif {empresa.Rif}, no se encuentra registrado en la empresa {empresa.Nombre}");
+
                 var siteAgente = Utils.GetSitPorIdCliente(int.Parse(existing.UserId.ToString()));
+
+                if (siteAgente == null)
+                    throw new Exception($"El UserId = {existing.UserId}, no esta asignado a un site en especifico.");
+
                 Utils._cadenaRR = empresa.ConexionBD;
                 var userRR = Utils.getUserPorIDCliente(int.Parse(existing.UserId.ToString())) ?? null;
 

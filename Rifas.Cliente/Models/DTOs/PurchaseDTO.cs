@@ -8,10 +8,17 @@ namespace Rifas.Client.Models.DTOs
     public class PurchaseDTO
     {
         public long? Id { get; set; }
+
+        [Required]
         public long UserId { get; set; }
+
+        [Required]
         public long RaffleId { get; set; }
-       
+
+        [Required]
         public int Quantity { get; set; }
+
+        [Required]
         public decimal TotalAmount { get; set; }
         public DateTime PurchaseDate { get; set; }
 
