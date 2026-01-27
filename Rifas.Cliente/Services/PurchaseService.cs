@@ -32,16 +32,25 @@ namespace Rifas.Client.Modulos.Services
     public class PurchaseService : IPurchaseService
     {
         private readonly IPurchaseRepository _repository;
+        private readonly IRaffleService _raffleService;
         private readonly ITicketsService _ticketsService;
         private readonly ITransacService _transService;
         private readonly ITransactionsService _transactionsService;
         private readonly ILogger<PurchaseService> _logger;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public PurchaseService(IPurchaseRepository repository, ITransacService transService, ITicketsService ticketsService, ITransactionsService transactionsService, ILogger<PurchaseService> logger, IHttpContextAccessor httpContextAccessor)
+        public PurchaseService(
+            IPurchaseRepository repository,
+            ITransacService transService,
+            ITicketsService ticketsService,
+            ITransactionsService transactionsService,
+            IRaffleService raffleService,
+            ILogger<PurchaseService> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _transService = transService;
             _ticketsService = ticketsService;
+            _raffleService = raffleService;
             _transactionsService = transactionsService;
             _logger = logger;
             _httpContextAccessor = httpContextAccessor;
@@ -51,6 +60,8 @@ namespace Rifas.Client.Modulos.Services
         {
 
             var entity = request.Datos.ToEntity();
+
+
             try
             {
 
@@ -75,10 +86,12 @@ namespace Rifas.Client.Modulos.Services
                 if (siteAgente == null)
                     throw new Exception($"El UserId = {entity.UserId}, no esta asignado a un site en especifico.");
 
+                if (request.Datos.Quantity < 0 || request.Datos.Quantity != request.Datos.Tickets.Count)
+                    throw new Exception($"La cantidad ({request.Datos.Quantity}) no coincide con el numero de tickets ({request.Datos.Tickets.Count})");
+
                 Utils._cadenaRR = empresa.ConexionBD;
                 var userRR = Utils.getUserPorIDCliente(int.Parse(entity.UserId.ToString())) ?? null;
 
-                
 
                 if (request?.Datos == null)
                 {
@@ -91,16 +104,48 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                
+
                 entity.PurchaseDate = DateTime.UtcNow;
 
-               
-                
                 if (userRR == null)
                 {
                     _logger.LogError($"Usuario {entity.UserId} inexistente en la bd RYR");
                     return null;
                 }
+
+
+                //verificamos la disponibilidad de los tickets
+                var listaTicketsNoDisponibles = new List<TicketsDTO>();
+                foreach (var ticket in request.Datos.Tickets)
+                {
+                    var ticketExists = await _raffleService.DisponibleTicketNumberAsync(new VerificarTicketNumberRequest
+                    {
+                        RaffleId = request.Datos.RaffleId,
+                        TicketNumber = ticket.TicketNumber,
+
+                    });
+                    if (ticketExists.Datos)
+                    {
+                        listaTicketsNoDisponibles.Add(ticket);
+                    }
+                }
+
+
+                if (listaTicketsNoDisponibles.Count > 0)
+                {
+                    var ticketsStr = string.Join(", ", listaTicketsNoDisponibles.Select(t => t.TicketNumber));
+                    return new CrearPurchaseResponse
+                    {
+                        EsExitoso = false,
+                        Mensaje = $"Los siguientes tickets no están disponibles: {ticketsStr}.",
+                        TicketsNoDisponibles = listaTicketsNoDisponibles,
+                        CodigoError = "TICKETS_NO_DISPONIBLES",
+                        Datos = null
+                    };
+                }
+
+
+
 
                 decimal totalAmount = 0;
                 if (siteAgente.IsoMoneda != Common.Constantes.MONEDA_USD)
@@ -115,7 +160,7 @@ namespace Rifas.Client.Modulos.Services
                     tipoTransaccion = Constantes.TIPOTRANS_RETIRO,
                     tipoProducto = Constantes.TIPO_PRODUCTO,
                     isWeb = true,
-                    monto = entity.Quantity * Math.Round(double.Parse(totalAmount.ToString(CultureInfo.InvariantCulture)), 2),
+                    monto = Math.Round(double.Parse(totalAmount.ToString(CultureInfo.InvariantCulture)), 2),
                     idcliente = 0,
                     usuario = userRR.NombreUser,
                     idAgente = 0,
@@ -159,6 +204,28 @@ namespace Rifas.Client.Modulos.Services
 
                 await _repository.SaveChangesAsync();
 
+
+                //asignamos la compra a los tickes nuevos del usuario
+                foreach (var ticket in request.Datos.Tickets)
+                {
+                    var resTicket = await _ticketsService.CrearAsync(new CrearTicketsRequest
+                    {
+                        Datos = new TicketsDTO
+                        {
+                            PurchaseId = entity.Id,
+                            CreatedAt = DateTime.UtcNow,
+                            RaffleId = ticket.RaffleId,
+                            Status = ticket.Status,
+                            BuyedDate = ticket.BuyedDate,
+                            State = ticket.State,
+                            StatusDate = ticket.StatusDate,
+                            TicketNumber = ticket.TicketNumber,
+                            UserId = entity.UserId,
+
+                        }
+                    });
+                }
+
                 return new CrearPurchaseResponse
                 {
                     EsExitoso = true,
@@ -189,7 +256,7 @@ namespace Rifas.Client.Modulos.Services
                 //if (trans == null || trans?.data < 0)
                 //{
                 //    _logger.LogError($"Error al crear la transacción para la devolucion {trans ?.mensaje}");
-                    
+
                 //}
 
                 return new CrearPurchaseResponse
@@ -269,7 +336,7 @@ namespace Rifas.Client.Modulos.Services
                         Mensaje = "Purchase no encontrada",
                         CodigoError = "ELIMINAR_PURCHASE_NOT_FOUND"
                     };
-                }                
+                }
 
                 var empresa = Utils.GetEmpresa(int.Parse(existing.UserId.ToString()));
                 if (empresa == null)
@@ -294,9 +361,9 @@ namespace Rifas.Client.Modulos.Services
                     return null;
                 }
 
-                if(siteAgente.IsoMoneda != Common.Constantes.MONEDA_USD)
+                if (siteAgente.IsoMoneda != Common.Constantes.MONEDA_USD)
                 {
-                    var conversion = await Rifas.Client.Helpers.Helper.ConvertCurrencyAsync(existing.TotalAmount, siteAgente.IsoMoneda,Common.Constantes.MONEDA_USD);
+                    var conversion = await Rifas.Client.Helpers.Helper.ConvertCurrencyAsync(existing.TotalAmount, siteAgente.IsoMoneda, Common.Constantes.MONEDA_USD);
                     existing.TotalAmount = Math.Round(conversion, 2);
                 }
 
@@ -524,7 +591,7 @@ namespace Rifas.Client.Modulos.Services
                     .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
                     .Take(request.RegistrosPorPagina.Value)
                     .ToListAsync();
-                
+
                 return new ListarPurchaseResponse
                 {
                     EsExitoso = true,
