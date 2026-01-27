@@ -48,6 +48,11 @@ namespace Rifas.Client.Modulos.Services
                 return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
             }
 
+            if(raffle.EndAt != null && raffle.EndAt <= DateTime.UtcNow)
+            {
+                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+            }
+
             if (raffle.TopNUmber != null && request.TicketNumber > raffle.TopNUmber)
             {
                 return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
