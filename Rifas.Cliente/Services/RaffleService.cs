@@ -41,13 +41,27 @@ namespace Rifas.Client.Modulos.Services
 
             if (request == null) return new VerificarTicketNumberResponse { Datos = false, EsExitoso = true, Mensaje = "OK" };
 
-            
+            var raffle = await _repository.GetByIdAsync(request.RaffleId);
+
+            if (raffle == null || !raffle.IsActive)
+            {
+                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+            }
+
+            if (raffle.TopNUmber != null && request.TicketNumber > raffle.TopNUmber)
+            {
+                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+            }
+            else if (raffle.TopNUmber == null && request.TicketNumber > (Math.Pow(10, raffle.level) - 1))
+            {
+                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+            }
 
             // Construir consulta LINQ con joins
             var q = from r in _repository.AllNoTracking()
                     join p in _purchaseRepository.AllNoTracking() on r.Id equals p.RaffleId
                     join t in _ticketsRepository.AllNoTracking() on p.Id equals t.PurchaseId
-                    where r.Id == request.RaffleId
+                    where r.Id == request.RaffleId  
                     select new { r, p, t };
 
             
