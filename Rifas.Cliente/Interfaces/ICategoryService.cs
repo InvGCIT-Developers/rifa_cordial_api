@@ -10,5 +10,6 @@ namespace Rifas.Client.Interfaces
         Task<ActualizarCategoryResponse> ActualizarCategoriaAsync(ActualizarCategoryRequest request);
         Task<BaseResponse> EliminarCategoriaAsync(long id);
         Task<ListarCategoryResponse> ListarCategoriasAsync(ListarCategoryRequest request);
+        Task<ListarCategoryResponse> ListarCategoriasActivasAsync(ListarCategoryRequest request);
     }
 }

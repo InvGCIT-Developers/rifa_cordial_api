@@ -35,7 +35,7 @@ builder.Services.AddInfrastructureWithContext<RifasContext>(builder.Configuratio
         sql =>
         {
             sql.EnableRetryOnFailure();
-            
+            sql.MigrationsAssembly("Rifas.Service");
         }));
 
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<RifasContext>());
@@ -191,3 +191,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+

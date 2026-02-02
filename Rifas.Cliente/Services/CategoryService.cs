@@ -160,6 +160,44 @@ namespace Rifas.Client.Services
             }
         }
 
+        public async Task<ListarCategoryResponse> ListarCategoriasActivasAsync(ListarCategoryRequest request)
+        {
+            try
+            {
+                var query = _categoryRepository.AllNoTracking().Where(x => x.IsActive);
+                var totalElementos = await query.CountAsync();
+                var lista = await query
+                    .OrderByDescending(x => x.Id)                    
+                    .ToListAsync();
+
+                return new ListarCategoryResponse
+                {
+                    EsExitoso = true,
+                    TotalElementos = totalElementos,
+                    TamanoPagina = request.RegistrosPorPagina.Value,
+                    TotalPaginas = (int)Math.Ceiling((double)totalElementos / request.RegistrosPorPagina.Value),
+                    Pagina = request.Pagina.Value,
+                    Datos = lista.ToDtoList()
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error listando categorias activas");
+                return new ListarCategoryResponse
+                {
+                    EsExitoso = false,
+                    TotalElementos = 0,
+                    TamanoPagina = request?.RegistrosPorPagina ?? 0,
+                    Pagina = request?.Pagina ?? 0,
+                    Mensaje = $"Error al listar las categorias activas: {ex.Message}",
+                    CodigoError = "LISTAR_ACTIVE_CATEGORY_ERROR",
+                    Errores = new[] { ex.Message }.ToList(),
+                    Datos = null
+                };
+            }
+
+        }
+
         public async Task<ListarCategoryResponse> ListarCategoriasAsync(ListarCategoryRequest request)
         {
             try

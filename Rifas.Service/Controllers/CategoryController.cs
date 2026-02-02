@@ -2,9 +2,11 @@ using GCIT.Core.Models.Base;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rifas.Client.Interfaces;
+using Rifas.Client.Models.DTOs;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
-using Rifas.Client.Interfaces;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Rifas.Service.Controllers
@@ -23,7 +25,7 @@ namespace Rifas.Service.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(CrearCategoryResponse), StatusCodes.Status201Created)]
         public Task<CrearCategoryResponse> CrearAsync([FromBody] CrearCategoryRequest request)
-            => _service.CrearCategoriaAsync(request);
+            => _service.CrearCategoriaAsync(request);        
 
         [HttpPut]
         [ProducesResponseType(typeof(ActualizarCategoryResponse), StatusCodes.Status200OK)]
@@ -40,9 +42,15 @@ namespace Rifas.Service.Controllers
         public Task<ObtenerCategoryPorIdResponse> ObtenerPorIdAsync([FromRoute] long id)
             => Task.FromResult(new ObtenerCategoryPorIdResponse { EsExitoso = false, Mensaje = "Not implemented", Datos = null });
 
-        [HttpPost("Listar")]
+
+        [HttpPost("ListarActivas")]
         [ProducesResponseType(typeof(ListarCategoryResponse), StatusCodes.Status200OK)]
-        
+        public Task<ListarCategoryResponse> ListarActivasAsync([FromBody] ListarCategoryRequest request)
+            => _service.ListarCategoriasActivasAsync(request);
+
+        [HttpPost("Listar")]
+        [ProducesResponseType(typeof(ListarCategoryResponse), StatusCodes.Status200OK)]       
+
         public Task<ListarCategoryResponse> ListarAsync([FromBody] ListarCategoryRequest request)
             => _service.ListarCategoriasAsync(request);
     }

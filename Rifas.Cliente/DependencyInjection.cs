@@ -26,6 +26,7 @@ namespace Rifas.Client
             services.AddScoped<IPurchaseService, PurchaseService>();
             services.AddScoped<IResultsService, ResultsService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ICloudflareService, CloudflareService>();
 
 
             services.AddScoped<IRaffleRepository, RaffleRepository>();

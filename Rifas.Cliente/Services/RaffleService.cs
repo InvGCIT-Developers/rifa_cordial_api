@@ -1,6 +1,8 @@
 using GCIT.Core.Models.Base;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Rifas.Client.Common;
+using Rifas.Client.Interfaces;
 using Rifas.Client.Mappers;
 using Rifas.Client.Models.DTOs;
 using Rifas.Client.Models.DTOs.Request;
@@ -9,8 +11,8 @@ using Rifas.Client.Repositories.Interfaces;
 using Rifas.Client.Services.Interfaces;
 using System;
 using System.Globalization;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Rifas.Client.Modulos.Services
@@ -21,13 +23,15 @@ namespace Rifas.Client.Modulos.Services
         private readonly ICategoryRepository _categoryRepository;
         private readonly IPurchaseRepository _purchaseRepository;
         private readonly ITicketsRepository _ticketsRepository;
+        private readonly ICloudflareService _cloudflareService;
 
-        public RaffleService(IRaffleRepository repository, ICategoryRepository categoryRepository, IPurchaseRepository purchaseRepository, ITicketsRepository ticketsRepository)
+        public RaffleService(IRaffleRepository repository, ICategoryRepository categoryRepository, IPurchaseRepository purchaseRepository, ITicketsRepository ticketsRepository, ICloudflareService cloudflareService)
         {
             _repository = repository;
             _categoryRepository = categoryRepository;
             _purchaseRepository = purchaseRepository;
             _ticketsRepository = ticketsRepository;
+            _cloudflareService = cloudflareService;
         }
 
 
@@ -77,6 +81,133 @@ namespace Rifas.Client.Modulos.Services
             return new VerificarTicketNumberResponse { Datos = exists, EsExitoso = true, Mensaje = "OK" };
         }
 
+        public async Task<CrearRaffleResponse> CrearConImagenFromFormAsync(CrearRaffleWithFileRequest form)
+        {
+            try
+            {
+                if (form == null)
+                {
+                    return new CrearRaffleResponse
+                    {
+                        EsExitoso = false,
+                        Mensaje = "Request es nulo",
+                        CodigoError = "CREAR_RAFFLE_INVALID_REQUEST",
+                        Datos = null
+                    };
+                }
+
+                // Mapear campos del formulario a la entidad
+                var entity = new Entities.RaffleEntity
+                {
+                    RaffleNumber = form.RaffleNumber,
+                    level = form.level,
+                    TopNUmber = form.TopNUmber,
+                    BottomNumber = form.BottomNumber,
+                    GarantedWinner = form.GarantedWinner,
+                    AmountActive = form.AmountActive,
+                    ImageUrl = null,
+                    ImageFile = null, // se llenará después de subir la imagen
+                    Title = form.Title,
+                    Description = form.Description,
+                    Sold = form.Sold,
+                    Total = form.Total,
+                    Price = form.Price,
+                    TotalTickets = form.TotalTickets,
+                    Participants = form.Participants,
+                    Organizer = form.Organizer,
+                    OrganizerRating = form.OrganizerRating,
+                    OrganizerRatingCount = form.OrganizerRatingCount,
+                    Category = form.Category,
+                    IsActive = form.IsActive,
+                    CreatedAt = DateTime.UtcNow,
+                    EndAt = form.EndAt  
+                };
+
+                // Persistir rifa inicialmente
+                await _repository.AddAsync(entity);
+                await _repository.SaveChangesAsync();
+
+                // Si vino archivo, intentar subir a Cloudflare
+                if (form.File != null && form.File.Length > 0)
+                {
+                    try
+                    {
+                        using var ms = new MemoryStream();
+                        await form.File.CopyToAsync(ms);
+                        var bytes = ms.ToArray();
+
+                        // la implementación de UploadImageAsync acepta (byte[] fileBytes, string fileName, long raffleId)
+                        var uploadResp = await _cloudflareService.UploadImageAsync(bytes, form.File.FileName, entity.Id);
+
+                        if (uploadResp != null && uploadResp.result != null)
+                        {
+                            // intentar obtener first variant o filename
+                            string? imageUrl = null;
+
+                            if (uploadResp.result.variants != null && uploadResp.result.variants.Count > 0)
+                            {
+                                imageUrl = uploadResp.result.variants[0];
+                            }
+                            else if (!string.IsNullOrWhiteSpace(uploadResp.result.filename))
+                            {
+                                imageUrl = uploadResp.result.filename;
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(imageUrl))
+                            {
+                                entity.ImageUrl = imageUrl;
+                                entity.ImageFile = form.File.FileName;
+                                await _repository.UpdateAsync(entity);
+                                await _repository.SaveChangesAsync();
+                            }
+                        }
+                    }
+                    catch (Exception exUpload)
+                    {
+                        // Si la subida falla, eliminamos la rifa creada para mantener consistencia
+                        try
+                        {
+                            await _repository.DeleteAsync(entity);
+                            await _repository.SaveChangesAsync();
+                        }
+                        catch
+                        {
+                            // ignorar errores al intentar limpiar, pero informar al cliente
+                        }
+
+                        return new CrearRaffleResponse
+                        {
+                            EsExitoso = false,
+                            Mensaje = $"Error al subir la imagen: {exUpload.Message}",
+                            CodigoError = "UPLOAD_IMAGE_ERROR",
+                            Datos = null
+                        };
+                    }
+                }
+
+                return new CrearRaffleResponse
+                {
+                    EsExitoso = true,
+                    Mensaje = "Rifa creada correctamente",
+                    Datos = entity.ToDto()
+                };
+            }
+            catch (Exception ex)
+            {
+                return new CrearRaffleResponse
+                {
+                    EsExitoso = false,
+                    Mensaje = $"Error al crear la rifa: {ex.Message}",
+                    CodigoError = "CREAR_RAFFLE_ERROR",
+                    Errores = new[] { ex.Message }.ToList(),
+                    Datos = null
+                };
+            }
+        }
+
+        
+    
+
         public async Task<CrearRaffleResponse> CrearAsync(CrearRaffleRequest request)
         {
             try
@@ -92,11 +223,14 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
+                
+
                 var entity = request.Datos.ToEntity();
                 entity.CreatedAt = DateTime.UtcNow;
 
                 await _repository.AddAsync(entity);
                 await _repository.SaveChangesAsync();
+                
 
                 return new CrearRaffleResponse
                 {

@@ -1,20 +1,18 @@
-﻿using Rifas.Client.Common;
+﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace Rifas.Client.Models.DTOs
+namespace Rifas.Client.Models.DTOs.Request
 {
-    public class RaffleDTO
+    public class CrearRaffleWithFileRequest
     {
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public long? Id { get; set; }
+        public IFormFile? File { get; set; }
 
-        [StringLength(6)]
-        [Required] // marcar como requerido
-        public string RaffleNumber { get; set; } = string.Empty; // inicializar a cadena vacía
+        [Required]
+        public string RaffleNumber { get; set; } = string.Empty;
 
         [Required]
         public int level { get; set; }
@@ -40,41 +38,24 @@ namespace Rifas.Client.Models.DTOs
         /// <summary>
         /// ruta de la imagen
         /// </summary>
-        [StringLength(250)]        
-        public string? ImageUrl { get; set; } 
-
         [StringLength(250)]
-        public string? ImageFile { get; set; }
+        public string? ImageUrl { get; set; }
 
-        [StringLength(50)]
         [Required]
         public string Title { get; set; } = string.Empty;
 
-        [StringLength(500)]
         [Required]
         public string Description { get; set; } = string.Empty;
 
-        /// <summary>
-        ///  cantidad vendida (ej. 720)
-        /// </summary>
         [Required]
         public int Sold { get; set; }
 
-        /// <summary>
-        /// total de entradas (ej. 1000)
-        /// </summary>
         [Required]
         public int Total { get; set; }
 
-        /// <summary>
-        /// precio mostrado (ej. "$5" o 5)
-        /// </summary>
         [Required]
         public decimal Price { get; set; }
 
-        /// <summary>
-        /// úmero de boletos (opcional)
-        /// </summary>
         [Required]
         public int TotalTickets { get; set; }
 
@@ -97,33 +78,15 @@ namespace Rifas.Client.Models.DTOs
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? OrganizerRating { get; set; }
 
-        /// <summary>
-        /// número de valoraciones
-        /// </summary>
         [Required]
         public int OrganizerRatingCount { get; set; }
 
-        /// <summary>
-        /// categoría de la rifa; ahora se incluye como DTO
-        /// </summary>
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public CategoryDTO? Category { get; set; }
+        [Required]
+        public int Category { get; set; }
 
-        /// <summary>
-        /// indica si la rifa está activa
-        /// </summary>
         [Required]
         public bool IsActive { get; set; }
 
-        /// <summary>
-        /// fecha de creacion del registro
-        /// </summary>
-        [Required]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        /// <summary>
-        /// fecha de finalización (opcional)
-        /// </summary>
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public DateTime? EndAt { get; set; }
     }

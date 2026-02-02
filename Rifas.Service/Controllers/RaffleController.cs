@@ -3,9 +3,11 @@ using GCIT.Core.Models.Base;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Rifas.Client.Models.DTOs;
 using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
 using Rifas.Client.Services.Interfaces;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Rifas.Service.Controllers
@@ -26,6 +28,14 @@ namespace Rifas.Service.Controllers
         [ProducesResponseType(typeof(CrearRaffleResponse), StatusCodes.Status201Created)]
         public Task<CrearRaffleResponse> CrearAsync([FromBody] CrearRaffleRequest request)
             => _service.CrearAsync(request);
+
+        [HttpPost("CrearConImagen")]
+        [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(CrearRaffleResponse), StatusCodes.Status201Created)]
+        [RequestSizeLimit(10_485_760)] // 10 MB
+        public Task<CrearRaffleResponse> CrearConImagenAsync([FromForm] CrearRaffleWithFileRequest request)
+            => _service.CrearConImagenFromFormAsync(request);
+
 
         [HttpPut]
         [ProducesResponseType(typeof(ActualizarRaffleResponse), StatusCodes.Status200OK)]

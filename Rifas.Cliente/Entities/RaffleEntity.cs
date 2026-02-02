@@ -32,11 +32,16 @@ namespace Rifas.Client.Entities
         /// monto del activo (ej. 1500.00)
         /// </summary>
         public decimal? AmountActive { get; set; }
+
         /// <summary>
         /// ruta de la imagen
         /// </summary>
         [StringLength(250)]
-        public string ImageUrl { get; set; } = null!;
+        public string? ImageUrl { get; set; }
+
+        [StringLength(250)]
+        public string? ImageFile { get; set; } 
+
 
         [StringLength(50)]
         public string Title { get; set; } = null!;
@@ -106,6 +111,11 @@ namespace Rifas.Client.Entities
         /// fecha de creacion del registro
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// fecha de inicio (opcional)
+        /// </summary>
+        public DateTime? StartedAt { get; set; } 
 
         /// <summary>
         /// fecha de finalización (opcional)
