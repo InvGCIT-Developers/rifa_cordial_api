@@ -89,5 +89,8 @@ namespace Rifas.Client.Models.DTOs.Request
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public DateTime? EndAt { get; set; }
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public DateTime? StartedAt { get; set; }
     }
 }

@@ -8,6 +8,9 @@ using Rifas.Client.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Rifas.Client.Services
 {
@@ -19,11 +22,10 @@ namespace Rifas.Client.Services
         private readonly string _cloudfareEmail;
         private readonly IConfiguration _configuration;
         private readonly RestClient _client;
-        //private readonly IRaffleService _raffleService;
 
-        public CloudflareService(IConfiguration _configuration)
+        public CloudflareService(IConfiguration configuration)
         {
-            _configuration = _configuration;
+            _configuration = configuration;
 
             _baseUrl = _configuration.GetValue<string>("cloudfareUrl");
             _cloudfareAccountId = _configuration.GetValue<string>("cloudfareAccountId");
@@ -32,11 +34,12 @@ namespace Rifas.Client.Services
 
             var options = new RestClientOptions(_baseUrl)
             {
-                Timeout = TimeSpan.Zero,
+                // No uses TimeSpan.Zero (puede causar cancelación inmediata).
+                // Para desactivar timeout explícitamente:
+                Timeout = System.Threading.Timeout.InfiniteTimeSpan
             };
 
             _client = new RestClient(options);
-            //_raffleService = raffleService;
         }
 
         public async Task<DownLoadImagegResponse?> UploadImageAsync(byte[] fileBytes, string fileName, long raffleId)
@@ -48,10 +51,26 @@ namespace Rifas.Client.Services
             request.AddParameter("metadata", JsonConvert.SerializeObject(new { key = fileName }), ParameterType.RequestBody);
             request.AddParameter("requireSignedURLs", "false");
 
-            var response = await _client.ExecuteAsync<DownLoadImagegResponse>(request);
+            RestResponse response;
+            try
+            {
+                // Ejecutar la petición y capturar cancelaciones/timeout
+                response = await _client.ExecuteAsync(request);
+            }
+            catch (TaskCanceledException tex)
+            {
+                // Timeout o cancelación
+                throw new TimeoutException("Timeout al intentar subir la imagen a Cloudflare.", tex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error inesperado al ejecutar la petición a Cloudflare.", ex);
+            }
+
             if (!response.IsSuccessful)
             {
-                throw new Exception(response.ErrorMessage);
+                var details = $"Status: {response.StatusCode}, ErrorMessage: {response.ErrorMessage}, Content: {response.Content}";
+                throw new Exception($"Cloudflare Upload failed: {details}");
             }
 
             var obj = JsonConvert.DeserializeObject<DownLoadImagegResponse>(response.Content);
@@ -59,29 +78,48 @@ namespace Rifas.Client.Services
             return obj;
         }
 
-
-
         public async Task<DownLoadImagegResponse> DownloadImageAsync(string imageId)
         {
-
             var request = new RestRequest($"/accounts/{_cloudfareAccountId}/images/v1/{imageId}", Method.Get);
             request.AddHeader("Authorization", $"Bearer {_cloudfareKey}");
-            var response = await _client.ExecuteAsync(request);
+
+            RestResponse response;
+            try
+            {
+                response = await _client.ExecuteAsync(request);
+            }
+            catch (TaskCanceledException tex)
+            {
+                throw new TimeoutException("Timeout al intentar descargar la imagen de Cloudflare.", tex);
+            }
+
             if (!response.IsSuccessful)
             {
-                throw new Exception(response.ErrorMessage);
+                var details = $"Status: {response.StatusCode}, ErrorMessage: {response.ErrorMessage}, Content: {response.Content}";
+                throw new Exception($"Cloudflare Download failed: {details}");
             }
 
             var obj = JsonConvert.DeserializeObject<DownLoadImagegResponse>(response.Content);
-
 
             return obj;
         }
 
         public async Task<List<DownLoadImagegResponse>> DownloadMultipleImagesAsync(List<string> imageIds)
         {
-            var tasks = imageIds.Select(id => DownloadImageAsync(id)).ToList();
-            return [.. (await Task.WhenAll(tasks))];
+            if (imageIds == null || imageIds.Count == 0) return new List<DownLoadImagegResponse>();
+
+            var tasks = imageIds.Select(id => DownloadImageAsync(id)).ToArray();
+
+            try
+            {
+                var results = await Task.WhenAll(tasks);
+                return results.ToList();
+            }
+            catch (Exception ex)
+            {
+                // Re-lanzar o manejar según necesidad
+                throw new Exception("Error al descargar imágenes múltiples desde Cloudflare.", ex);
+            }
         }
     }
 }

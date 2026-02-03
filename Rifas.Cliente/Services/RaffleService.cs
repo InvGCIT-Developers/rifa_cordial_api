@@ -120,6 +120,7 @@ namespace Rifas.Client.Modulos.Services
                     Category = form.Category,
                     IsActive = form.IsActive,
                     CreatedAt = DateTime.UtcNow,
+                    StartedAt = DateTime.UtcNow,
                     EndAt = form.EndAt  
                 };
 
