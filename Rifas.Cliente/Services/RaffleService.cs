@@ -100,8 +100,8 @@ namespace Rifas.Client.Modulos.Services
                 var entity = new Entities.RaffleEntity
                 {
                     RaffleNumber = form.RaffleNumber,
-                    level = form.level,
-                    TopNUmber = form.TopNUmber,
+                    level = form.Level,
+                    TopNUmber = form.TopNumber,
                     BottomNumber = form.BottomNumber,
                     GarantedWinner = form.GarantedWinner,
                     AmountActive = form.AmountActive,

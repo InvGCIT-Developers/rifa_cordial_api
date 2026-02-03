@@ -15,10 +15,10 @@ namespace Rifas.Client.Models.DTOs.Request
         public string RaffleNumber { get; set; } = string.Empty;
 
         [Required]
-        public int level { get; set; }
+        public int Level { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public int? TopNUmber { get; set; }
+        public int? TopNumber { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? BottomNumber { get; set; }
