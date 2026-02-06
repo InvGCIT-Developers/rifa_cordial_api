@@ -48,6 +48,59 @@ namespace Rifas.Client.Data
                 .HasForeignKey(r => r.Category)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
+            modelBuilder.Entity<RaffleEntity>()
+                .HasMany(p => p.Tickets)
+                .WithOne(t => t.Raffle)
+                .HasForeignKey(t => t.RaffleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RaffleEntity>()
+                .HasMany(p => p.Purchases)
+                .WithOne(t => t.Raffle)
+                .HasForeignKey(t => t.RaffleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Tickets <- Purchase (ya definido arriba), repetir explicitamente para evitar ambigüedad
+            modelBuilder.Entity<TicketsEntity>()
+                .HasOne(t => t.Purchase)
+                .WithMany(p => p.Tickets)
+                .HasForeignKey(t => t.PurchaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Tickets <- Raffle (ya definido arriba), explícito también aquí
+            modelBuilder.Entity<TicketsEntity>()
+                .HasOne(t => t.Raffle)
+                .WithMany(r => r.Tickets)
+                .HasForeignKey(t => t.RaffleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Results -> Raffle (many results per raffle)
+            modelBuilder.Entity<ResultsEntity>()
+                .HasOne(r => r.Raffle)
+                .WithMany(rf => rf.Results)
+                .HasForeignKey(r => r.RaffleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Results -> Ticket (opcional, one-to-one). Ticket puede no tener Result.
+            modelBuilder.Entity<ResultsEntity>()
+                .HasOne(r => r.Ticket)
+                .WithOne()
+                .HasForeignKey<ResultsEntity>(r => r.TicketId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<TicketsEntity>()
+                .Property(t => t.Status)
+                .HasConversion<int>()
+                .HasColumnType("int");
+
+            modelBuilder.Entity<TicketsEntity>()
+                .Property(t => t.State)
+                .HasConversion<int>()
+                .HasColumnType("int");
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(RifasContext).Assembly);
         }
     }

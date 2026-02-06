@@ -10,7 +10,7 @@ namespace Rifas.Client.Entities
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;

@@ -16,6 +16,8 @@ namespace Rifas.Client.Entities
         [StringLength(6)]
         public string RaffleNumber { get; set; } = null!;
 
+        public long? TicketId { get; set; }       
+
         [StringLength(6)]
         public string WinningNumber { get; set; } = null!;
 
@@ -32,6 +34,10 @@ namespace Rifas.Client.Entities
         public DateTime LotteryDate { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public virtual RaffleEntity? Raffle { get; set; }
+
+        public virtual TicketsEntity? Ticket { get; set; }
 
     }
 }

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Rifas.Client.Common
 {
-    public enum RifaCategoriaEnum
+    public enum RifaCategoriaEnum: int
     {
         Sorteos = 0,
         Premios = 1,
@@ -13,7 +13,7 @@ namespace Rifas.Client.Common
         Promociones = 3
     }
 
-    public enum TicketStatusEnum
+    public enum TicketStatusEnum: int
     {
         Confirmado = 0,
         Donacion = 1,
@@ -23,7 +23,7 @@ namespace Rifas.Client.Common
 
     }
 
-    public enum TicketStateEnum
+    public enum TicketStateEnum: int
     {
         [Display(Name = "Sin resultado")] SinResultado = 0,
         [Display(Name = "Ganador")] Ganador = 1,

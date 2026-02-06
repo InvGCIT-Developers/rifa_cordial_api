@@ -193,7 +193,9 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var query = _repository.AllNoTracking();
+                var query = _repository.AllNoTracking()
+                    .Include(r => r.Ticket)
+                    .Include(r => r.Raffle).AsQueryable();
 
                 // aplicar filtros opcionales
                 if (request?.Filtros != null && request.Filtros.Any())

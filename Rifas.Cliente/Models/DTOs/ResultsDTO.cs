@@ -13,6 +13,8 @@ namespace Rifas.Client.Models.DTOs
         [StringLength(6)]
         public string RaffleNumber { get; set; } = null!;
 
+        public long? TicketId { get; set; }        
+
         [StringLength(6)]
         public string WinningNumber { get; set; } = null!;
 
@@ -29,5 +31,10 @@ namespace Rifas.Client.Models.DTOs
         public DateTime LotteryDate { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public TicketsDTO? Ticket { get; set; }
+
+        public RaffleDTO? Raffle { get; set; }
+
     }
 }

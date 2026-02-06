@@ -36,5 +36,9 @@ namespace Rifas.Client.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual PurchaseEntity? Purchase { get; set; }
+
+        public virtual RaffleEntity? Raffle { get; set; }
+
+
     }
 }

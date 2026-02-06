@@ -31,6 +31,11 @@ namespace Rifas.Client.Models.DTOs
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? GarantedWinner { get; set; }
 
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [Range(1, 3)]
+        public int? WinnersNumber { get; set; } = 1;
+
         /// <summary>
         /// monto del activo (ej. 1500.00)
         /// </summary>

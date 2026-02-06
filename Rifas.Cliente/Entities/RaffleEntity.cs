@@ -28,6 +28,9 @@ namespace Rifas.Client.Entities
         /// </summary>
         public bool? GarantedWinner { get; set; }
 
+
+        public int? WinnersNumber { get; set; } = 1;
+
         /// <summary>
         /// monto del activo (ej. 1500.00)
         /// </summary>
@@ -95,7 +98,7 @@ namespace Rifas.Client.Entities
         /// <summary>
         /// categoría de la rifa; almacena el Id de CategoryEntity
         /// </summary>
-        public long Category { get; set; }
+        public int Category { get; set; }
 
         /// <summary>
         /// navegación a la categoría
@@ -122,6 +125,10 @@ namespace Rifas.Client.Entities
         /// </summary>
         public DateTime? EndAt { get; set; }
 
-        
+        public virtual ICollection<TicketsEntity>? Tickets { get; set; }
+        public virtual ICollection<ResultsEntity>? Results { get; set; }
+        public virtual ICollection<PurchaseEntity>? Purchases { get; set; }
+
+
     }
 }

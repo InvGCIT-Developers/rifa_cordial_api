@@ -23,5 +23,7 @@ namespace Rifas.Client.Entities
         public bool IsActive { get; set; }
 
         public virtual ICollection<TicketsEntity> Tickets { get; set; } = new List<TicketsEntity>();
+
+        public virtual RaffleEntity? Raffle { get; set; }
     }
 }

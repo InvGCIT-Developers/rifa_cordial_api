@@ -7,7 +7,7 @@ namespace Rifas.Client.Models.DTOs
 {
     public class CategoryDTO
     {
-        public long? Id { get; set; }
+        public int? Id { get; set; }
 
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;

@@ -20,6 +20,7 @@ namespace Rifas.Client.Mappers
                 TopNUmber = src.TopNUmber,
                 AmountActive = src.AmountActive,
                 BottomNumber = src.BottomNumber,
+                WinnersNumber = src.WinnersNumber,
                 GarantedWinner = src.GarantedWinner,
                 ImageUrl = src.ImageUrl,
                 Title = src.Title,
@@ -51,6 +52,7 @@ namespace Rifas.Client.Mappers
                 AmountActive = src.AmountActive,
                 BottomNumber = src.BottomNumber,
                 GarantedWinner = src.GarantedWinner,
+                WinnersNumber = src.WinnersNumber,
                 ImageUrl = src.ImageUrl,
                 Title = src.Title,
                 Description = src.Description,
@@ -259,7 +261,9 @@ namespace Rifas.Client.Mappers
                 ThirdPlace = src.ThirdPlace,
                 IsActive = src.IsActive,
                 LotteryDate = src.LotteryDate,
-                CreatedAt = src.CreatedAt
+                CreatedAt = src.CreatedAt,
+                Raffle = src.Raffle?.ToDto(),
+                Ticket = src.Ticket?.ToDto()
             };
         }
 
