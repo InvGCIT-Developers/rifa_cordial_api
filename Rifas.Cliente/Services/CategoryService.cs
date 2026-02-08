@@ -94,18 +94,19 @@ namespace Rifas.Client.Services
                     };
                 }
 
-                var toUpdate = request.Datos.ToEntity();
-                // preserve Id
-                toUpdate.Id = existing.Id;
+                // actualizar la instancia ya trackeada para evitar conflicto de seguimiento
+                existing.Name = request.Datos.Name;
+                existing.Description = request.Datos.Description;
+                existing.IsActive = request.Datos.IsActive;
 
-                await _categoryRepository.UpdateAsync(toUpdate);
+                await _categoryRepository.UpdateAsync(existing);
                 await _categoryRepository.SaveChangesAsync();
 
                 return new ActualizarCategoryResponse
                 {
                     EsExitoso = true,
                     Mensaje = "Categoria actualizada correctamente",
-                    Datos = toUpdate.ToDto()
+                    Datos = existing.ToDto()
                 };
             }
             catch (Exception ex)

@@ -110,18 +110,27 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                var toUpdate = request.Datos.ToEntity();
+                // actualizar la instancia ya trackeada para evitar conflicto de seguimiento
+                var dto = request.Datos;
+                existing.RaffleId = dto.RaffleId;
+                existing.PurchaseId = dto.PurchaseId;
+                existing.UserId = dto.UserId;
+                existing.TicketNumber = dto.TicketNumber;
+                existing.BuyedDate = dto.BuyedDate;
+                existing.Status = dto.Status;
+                existing.State = dto.State;
+                existing.StatusDescription = dto.StatusDescription;
+                existing.StatusDate = dto.StatusDate;
                 // preservar CreatedAt
-                toUpdate.CreatedAt = existing.CreatedAt;
 
-                await _repository.UpdateAsync(toUpdate);
+                await _repository.UpdateAsync(existing);
                 await _repository.SaveChangesAsync();
 
                 return new ActualizarTicketsResponse
                 {
                     EsExitoso = true,
                     Mensaje = "Ticket actualizado correctamente",
-                    Datos = toUpdate.ToDto()
+                    Datos = existing.ToDto()
                 };
             }
             catch (Exception ex)
@@ -381,7 +390,8 @@ namespace Rifas.Client.Modulos.Services
                         TicketNumber = x.Ticket.TicketNumber,
                         Note = x.Ticket.StatusDescription,
                         Category = x.Raffle.Category,
-                        Status = x.Ticket.Status,
+                        Status = x.Ticket.Status.GetDisplayName(),
+                        State = x.Ticket.State.GetDisplayName(),
                         PurchasedAt = x.Ticket.BuyedDate,
                         Purchase = x.Ticket.PurchaseId != null ? _purchaserepository.AllNoTracking()
                             .Where(p => p.Id == x.Ticket.PurchaseId)

@@ -96,10 +96,19 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
+                //generar raffleNumber único aleatoreamente debe ser un numerp entre 100000 y 99999
+                var raffleNumber = new Random().Next(100000, 999999).ToString();
+
+                // validar que el raffleNumber generado no exista ya en la base de datos
+                while (await _repository.AllNoTracking().AnyAsync(x => x.RaffleNumber == raffleNumber))
+                {
+                    raffleNumber = new Random().Next(100000, 999999).ToString();
+                }
+
                 // Mapear campos del formulario a la entidad
                 var entity = new Entities.RaffleEntity
                 {
-                    RaffleNumber = form.RaffleNumber,
+                    RaffleNumber = raffleNumber,
                     level = form.Level,
                     TopNUmber = form.TopNumber,
                     BottomNumber = form.BottomNumber,
@@ -224,9 +233,17 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                
+                //generar raffleNumber único aleatoreamente debe ser un numerp entre 100000 y 99999
+                var raffleNumber = new Random().Next(100000, 999999).ToString();
+
+                // validar que el raffleNumber generado no exista ya en la base de datos
+                while (await _repository.AllNoTracking().AnyAsync(x => x.RaffleNumber == raffleNumber))
+                {
+                    raffleNumber = new Random().Next(100000, 999999).ToString();
+                }
 
                 var entity = request.Datos.ToEntity();
+                entity.RaffleNumber = raffleNumber;
                 entity.CreatedAt = DateTime.UtcNow;
 
                 await _repository.AddAsync(entity);
@@ -280,18 +297,38 @@ namespace Rifas.Client.Modulos.Services
                     };
                 }
 
-                var toUpdate = request.Datos.ToEntity();
-                // preservar CreatedAt del registro existente
-                toUpdate.CreatedAt = existing.CreatedAt;
+                // actualizar la instancia ya trackeada para evitar conflicto de seguimiento
+                var dto = request.Datos;
+                existing.RaffleNumber = dto.RaffleNumber;
+                existing.level = dto.level;
+                existing.TopNUmber = dto.TopNUmber;
+                existing.BottomNumber = dto.BottomNumber;
+                existing.GarantedWinner = dto.GarantedWinner;
+                existing.AmountActive = dto.AmountActive;
+                existing.ImageUrl = dto.ImageUrl;
+                existing.Title = dto.Title;
+                existing.Description = dto.Description;
+                existing.Sold = dto.Sold;
+                existing.Total = dto.Total;
+                existing.Price = dto.Price;
+                existing.TotalTickets = dto.TotalTickets;
+                existing.Participants = dto.Participants;
+                existing.Organizer = dto.Organizer;
+                existing.OrganizerRating = dto.OrganizerRating;
+                existing.OrganizerRatingCount = dto.OrganizerRatingCount;
+                // si viene Category como DTO, usar su Id, sino conservar el existente
+                existing.Category = dto.Category != null ? dto.Category.Id ?? existing.Category : existing.Category;
+                existing.IsActive = dto.IsActive;
+                existing.EndAt = dto.EndAt;
 
-                await _repository.UpdateAsync(toUpdate);
+                await _repository.UpdateAsync(existing);
                 await _repository.SaveChangesAsync();
 
                 return new ActualizarRaffleResponse
                 {
                     EsExitoso = true,
                     Mensaje = "Rifa actualizada correctamente",
-                    Datos = toUpdate.ToDto()
+                    Datos = existing.ToDto()
                 };
             }
             catch (Exception ex)

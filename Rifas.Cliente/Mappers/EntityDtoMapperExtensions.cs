@@ -20,7 +20,7 @@ namespace Rifas.Client.Mappers
                 TopNUmber = src.TopNUmber,
                 AmountActive = src.AmountActive,
                 BottomNumber = src.BottomNumber,
-                WinnersNumber = src.WinnersNumber,
+                WinnersNumber = src.WinnersNumber ?? 1,
                 GarantedWinner = src.GarantedWinner,
                 ImageUrl = src.ImageUrl,
                 Title = src.Title,
@@ -46,7 +46,7 @@ namespace Rifas.Client.Mappers
             return new RaffleEntity
             {
                 Id = src.Id ?? 0,
-                RaffleNumber = src.RaffleNumber,
+                RaffleNumber = src.RaffleNumber ?? string.Empty,
                 level = src.level,
                 TopNUmber = src.TopNUmber,
                 AmountActive = src.AmountActive,
@@ -84,6 +84,7 @@ namespace Rifas.Client.Mappers
             return new CategoryDTO
             {
                 Id = src.Id,
+                Name = src.Name,
                 Description = src.Description,
                 IsActive = src.IsActive
             };
@@ -95,6 +96,7 @@ namespace Rifas.Client.Mappers
             return new CategoryEntity
             {
                 Id = src.Id ?? 0,
+                Name = src.Name,
                 Description = src.Description,
                 IsActive = src.IsActive
             };

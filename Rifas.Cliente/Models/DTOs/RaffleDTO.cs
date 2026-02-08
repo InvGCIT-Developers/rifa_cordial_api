@@ -13,8 +13,8 @@ namespace Rifas.Client.Models.DTOs
         public long? Id { get; set; }
 
         [StringLength(6)]
-        [Required] // marcar como requerido
-        public string RaffleNumber { get; set; } = string.Empty; // inicializar a cadena vacía
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? RaffleNumber { get; set; } 
 
         [Required]
         public int level { get; set; }
@@ -32,9 +32,9 @@ namespace Rifas.Client.Models.DTOs
         public bool? GarantedWinner { get; set; }
 
 
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [Required]
         [Range(1, 3)]
-        public int? WinnersNumber { get; set; } = 1;
+        public int WinnersNumber { get; set; } = 1;
 
         /// <summary>
         /// monto del activo (ej. 1500.00)

@@ -15,16 +15,16 @@ namespace Rifas.Client.Models.DTOs
         public string Note { get; set; } = null!;
 
         public long Category { get; set; }
-        public TicketStatusEnum Status { get; set; }
-        public TicketStateEnum State { get; set; } = TicketStateEnum.SinResultado;
-        public string StateDescription
-        {
-            get
-            {
-                return State.GetDisplayName();
+        public string Status { get; set; }
+        public string State { get; set; } 
+        //public string StateDescription
+        //{
+        //    get
+        //    {
+        //        return State.GetDisplayName();
 
-            }
-        }
+        //    }
+        //}
         public DateTime? PurchasedAt { get; set; }
 
         public PurchaseDTO? Purchase { get; set; }
