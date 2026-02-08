@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Rifas.Client.Models.DTOs.Response
 {
-    public class VerificarTicketNumberResponse: BaseResponse<bool>
+    public class VerificarTicketNumberResponse: BaseResponse<VerificarTicketNumberDTO>
     {
     }
 }

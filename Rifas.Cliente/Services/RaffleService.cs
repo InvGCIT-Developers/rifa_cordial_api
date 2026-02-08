@@ -43,27 +43,27 @@ namespace Rifas.Client.Modulos.Services
             // INNER JOIN Tickets t ON r.Id = t.RaffleId AND p.Id = t.PurchaseId
             // WHERE r.Id = @RaffleId AND t.TicketNumber = @TicketNumber
 
-            if (request == null) return new VerificarTicketNumberResponse { Datos = false, EsExitoso = true, Mensaje = "OK" };
+            if (request == null) return new VerificarTicketNumberResponse { Datos =  new VerificarTicketNumberDTO { Disponible = false}, EsExitoso = true, Mensaje = "OK" };
 
             var raffle = await _repository.GetByIdAsync(request.RaffleId);
 
             if (raffle == null || !raffle.IsActive)
             {
-                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+                return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
             }
 
             if(raffle.EndAt != null && raffle.EndAt <= DateTime.UtcNow)
             {
-                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+                return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
             }
 
             if (raffle.TopNUmber != null && request.TicketNumber > raffle.TopNUmber)
             {
-                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+                return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
             }
             else if (raffle.TopNUmber == null && request.TicketNumber > (Math.Pow(10, raffle.level) - 1))
             {
-                return new VerificarTicketNumberResponse { Datos = true, EsExitoso = true, Mensaje = "OK" };
+                return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
             }
 
             // Construir consulta LINQ con joins
@@ -78,7 +78,7 @@ namespace Rifas.Client.Modulos.Services
             
 
             var exists = await q.AnyAsync();
-            return new VerificarTicketNumberResponse { Datos = exists, EsExitoso = true, Mensaje = "OK" };
+            return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = !exists }, EsExitoso = true, Mensaje = "OK" };
         }
 
         public async Task<CrearRaffleResponse> CrearConImagenFromFormAsync(CrearRaffleWithFileRequest form)

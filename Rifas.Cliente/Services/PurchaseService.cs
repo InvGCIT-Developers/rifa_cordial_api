@@ -124,7 +124,7 @@ namespace Rifas.Client.Modulos.Services
                         TicketNumber = ticket.TicketNumber,
 
                     });
-                    if (ticketExists.Datos)
+                    if (ticketExists.Datos.Disponible)
                     {
                         listaTicketsNoDisponibles.Add(ticket);
                     }
