@@ -36,9 +36,9 @@ namespace Rifas.Client.Mappers
                 OrganizerRatingCount = src.OrganizerRatingCount,
                 Category = src.CategoryEntity?.ToDto(),
                 IsActive = src.IsActive,
-                CreatedAt = src.CreatedAt,
-                StartedAt = src.StartedAt,
-                EndAt = src.EndAt
+                CreatedAt = src.CreatedAt.ToUniversalTime(),
+                StartedAt = src.StartedAt.HasValue ? src.StartedAt.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),
+                EndAt = src.EndAt.HasValue ? src.EndAt.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime()
             };
         }
 
@@ -122,11 +122,11 @@ namespace Rifas.Client.Mappers
                 RaffleId = src.RaffleId,                
                 UserId = src.UserId,
                 TicketNumber = src.TicketNumber,
-                BuyedDate = src.BuyedDate,
+                BuyedDate = src.BuyedDate.HasValue ? src.BuyedDate.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),
                 Status = src.Status,
                 StatusDescription = src.StatusDescription,
-                StatusDate = src.StatusDate,
-                CreatedAt = src.CreatedAt,
+                StatusDate = src.StatusDate.ToUniversalTime(),
+                CreatedAt = src.CreatedAt.ToUniversalTime(),
                  PurchaseId = src.PurchaseId
             };
         }
@@ -178,7 +178,7 @@ namespace Rifas.Client.Mappers
                 Description = src.Description,
                 RestMethod = src.RestMethod,
                 JsonRequest = src.JsonRequest,
-                CreatedAt = src.CreatedAt
+                CreatedAt = src.CreatedAt.ToUniversalTime()
             };
         }
 
@@ -203,7 +203,7 @@ namespace Rifas.Client.Mappers
                 Description = src.Description,
                 RestMethod = src.RestMethod,
                 JsonRequest = src.JsonRequest,
-                CreatedAt = src.CreatedAt
+                CreatedAt = src.CreatedAt.ToUniversalTime()
             };
         }
 
@@ -224,7 +224,7 @@ namespace Rifas.Client.Mappers
                 RaffleId = src.RaffleId,                
                 Quantity = src.Quantity,
                 TotalAmount = src.TotalAmount,
-                PurchaseDate = src.PurchaseDate,
+                PurchaseDate = src.PurchaseDate.ToUniversalTime(),
                 IsActive = src.IsActive,
                  Tickets = src.Tickets?.ToDtoList() ?? new List<TicketsDTO>()
             };
@@ -266,8 +266,8 @@ namespace Rifas.Client.Mappers
                 SecondPlace = src.SecondPlace,
                 ThirdPlace = src.ThirdPlace,
                 IsActive = src.IsActive,
-                LotteryDate = src.LotteryDate,
-                CreatedAt = src.CreatedAt,
+                LotteryDate = src.LotteryDate.ToUniversalTime(),
+                CreatedAt = src.CreatedAt.ToUniversalTime(),
                 Raffle = src.Raffle?.ToDto(),
                 Ticket = src.Ticket?.ToDto()
             };
