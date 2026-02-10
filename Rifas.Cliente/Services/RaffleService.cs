@@ -43,7 +43,7 @@ namespace Rifas.Client.Modulos.Services
             // INNER JOIN Tickets t ON r.Id = t.RaffleId AND p.Id = t.PurchaseId
             // WHERE r.Id = @RaffleId AND t.TicketNumber = @TicketNumber
 
-            if (request == null) return new VerificarTicketNumberResponse { Datos =  new VerificarTicketNumberDTO { Disponible = false}, EsExitoso = true, Mensaje = "OK" };
+            if (request == null) return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
 
             var raffle = await _repository.GetByIdAsync(request.RaffleId);
 
@@ -52,7 +52,7 @@ namespace Rifas.Client.Modulos.Services
                 return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
             }
 
-            if(raffle.EndAt != null && raffle.EndAt <= DateTime.UtcNow)
+            if (raffle.EndAt != null && raffle.EndAt <= DateTime.UtcNow)
             {
                 return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = false }, EsExitoso = true, Mensaje = "OK" };
             }
@@ -70,12 +70,12 @@ namespace Rifas.Client.Modulos.Services
             var q = from r in _repository.AllNoTracking()
                     join p in _purchaseRepository.AllNoTracking() on r.Id equals p.RaffleId
                     join t in _ticketsRepository.AllNoTracking() on p.Id equals t.PurchaseId
-                    where r.Id == request.RaffleId  
+                    where r.Id == request.RaffleId
                     select new { r, p, t };
 
-            
-                q = q.Where(x => x.t.TicketNumber == request.TicketNumber);
-            
+
+            q = q.Where(x => x.t.TicketNumber == request.TicketNumber);
+
 
             var exists = await q.AnyAsync();
             return new VerificarTicketNumberResponse { Datos = new VerificarTicketNumberDTO { Disponible = !exists }, EsExitoso = true, Mensaje = "OK" };
@@ -129,8 +129,8 @@ namespace Rifas.Client.Modulos.Services
                     Category = form.Category,
                     IsActive = form.IsActive,
                     CreatedAt = DateTime.UtcNow,
-                    StartedAt = DateTime.UtcNow,
-                    EndAt = form.EndAt  
+                    StartedAt = form.StartedAt,
+                    EndAt = form.EndAt
                 };
 
                 // Persistir rifa inicialmente
@@ -215,8 +215,8 @@ namespace Rifas.Client.Modulos.Services
             }
         }
 
-        
-    
+
+
 
         public async Task<CrearRaffleResponse> CrearAsync(CrearRaffleRequest request)
         {
@@ -248,7 +248,7 @@ namespace Rifas.Client.Modulos.Services
 
                 await _repository.AddAsync(entity);
                 await _repository.SaveChangesAsync();
-                
+
 
                 return new CrearRaffleResponse
                 {
@@ -319,6 +319,7 @@ namespace Rifas.Client.Modulos.Services
                 // si viene Category como DTO, usar su Id, sino conservar el existente
                 existing.Category = dto.Category != null ? dto.Category.Id ?? existing.Category : existing.Category;
                 existing.IsActive = dto.IsActive;
+                existing.StartedAt = dto.StartedAt;
                 existing.EndAt = dto.EndAt;
 
                 await _repository.UpdateAsync(existing);
@@ -618,9 +619,9 @@ namespace Rifas.Client.Modulos.Services
                     FiltrosAplicados = request.Filtros,
                     OrdenarPor = "Id",
                     Orden = "DESC",
-                     Mensaje = $"Error al listar los rifas: {ex.Message}",
-                     CodigoError = "LISTAR_RAFFLES_ERROR",
-                      Errores = new[] { ex.Message }.ToList(),
+                    Mensaje = $"Error al listar los rifas: {ex.Message}",
+                    CodigoError = "LISTAR_RAFFLES_ERROR",
+                    Errores = new[] { ex.Message }.ToList(),
                     Datos = null
                 };
             }
