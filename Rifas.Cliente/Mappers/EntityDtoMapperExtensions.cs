@@ -23,6 +23,7 @@ namespace Rifas.Client.Mappers
                 WinnersNumber = src.WinnersNumber ?? 1,
                 GarantedWinner = src.GarantedWinner,
                 ImageUrl = src.ImageUrl,
+                ImageFile = src.ImageFile,
                 Title = src.Title,
                 Description = src.Description,
                 Sold = src.Sold,
@@ -36,6 +37,7 @@ namespace Rifas.Client.Mappers
                 Category = src.CategoryEntity?.ToDto(),
                 IsActive = src.IsActive,
                 CreatedAt = src.CreatedAt,
+                StartedAt = src.StartedAt,
                 EndAt = src.EndAt
             };
         }
@@ -54,6 +56,7 @@ namespace Rifas.Client.Mappers
                 GarantedWinner = src.GarantedWinner,
                 WinnersNumber = src.WinnersNumber,
                 ImageUrl = src.ImageUrl,
+                ImageFile = src.ImageFile,
                 Title = src.Title,
                 Description = src.Description,
                 Sold = src.Sold,
@@ -67,6 +70,7 @@ namespace Rifas.Client.Mappers
                 Category = src.Category != null ? src.Category.Id ?? 0 : 0,
                 IsActive = src.IsActive,
                 CreatedAt = src.CreatedAt,
+                StartedAt = src.StartedAt,
                 EndAt = src.EndAt
             };
         }
