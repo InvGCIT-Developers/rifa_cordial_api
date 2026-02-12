@@ -1,8 +1,9 @@
+using Rifas.Client.Common;
+using Rifas.Client.Entities;
+using Rifas.Client.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rifas.Client.Entities;
-using Rifas.Client.Models.DTOs;
 
 namespace Rifas.Client.Mappers
 {
@@ -119,15 +120,36 @@ namespace Rifas.Client.Mappers
             return new TicketsDTO
             {
                 Id = src.Id,
-                RaffleId = src.RaffleId,                
+                RaffleId = src.RaffleId,
                 UserId = src.UserId,
                 TicketNumber = src.TicketNumber,
                 BuyedDate = src.BuyedDate.HasValue ? src.BuyedDate.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),
-                Status = src.Status,
+                Status = src.Status,                  
+                State = src.State,
                 StatusDescription = src.StatusDescription,
                 StatusDate = src.StatusDate.ToUniversalTime(),
                 CreatedAt = src.CreatedAt.ToUniversalTime(),
-                 PurchaseId = src.PurchaseId
+                PurchaseId = src.PurchaseId
+            };
+        }
+
+
+        public static TicketsListadoDTO ToListadoTicketsDto(this TicketsEntity src)
+        {
+            if (src == null) return new TicketsListadoDTO();
+            return new TicketsListadoDTO
+            {
+                RaffleId = src.RaffleId,                
+                TicketNumber = src.TicketNumber,                
+                Status = src.Status.GetDisplayName(),
+                State = src.State.GetDisplayName(),
+                Note = src.StatusDescription,
+                Category = src.Raffle?.Category ?? 0,
+                RaffleName = src.Raffle?.Title ?? string.Empty,
+                Purchase = src.Purchase != null ? src.Purchase.ToDto() : null,
+                RaffleImage = src.Raffle?.ImageUrl ?? string.Empty,                
+                PurchasedAt = src.BuyedDate.HasValue ? src.BuyedDate.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),
+                PurchaseId = src.PurchaseId
             };
         }
 
@@ -142,11 +164,12 @@ namespace Rifas.Client.Mappers
                 TicketNumber = src.TicketNumber,
                 BuyedDate = src.BuyedDate,
                 Status = src.Status,
+                State = src.State,
                 StatusDescription = src.StatusDescription,
                 StatusDate = src.StatusDate,
                 CreatedAt = src.CreatedAt,
                 PurchaseId = src.PurchaseId,
-                 
+
             };
         }
 
@@ -221,12 +244,12 @@ namespace Rifas.Client.Mappers
             {
                 Id = src.Id,
                 UserId = src.UserId,
-                RaffleId = src.RaffleId,                
+                RaffleId = src.RaffleId,
                 Quantity = src.Quantity,
                 TotalAmount = src.TotalAmount,
                 PurchaseDate = src.PurchaseDate.ToUniversalTime(),
                 IsActive = src.IsActive,
-                 Tickets = src.Tickets?.ToDtoList() ?? new List<TicketsDTO>()
+                Tickets = src.Tickets?.ToDtoList() ?? new List<TicketsDTO>()
             };
         }
 

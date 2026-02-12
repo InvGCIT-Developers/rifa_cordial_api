@@ -22,8 +22,11 @@ namespace Rifas.Client.Models.DTOs
 
         public TicketStatusEnum Status { get; set; }
 
+        public string TicketStatus { get => Status.GetDisplayName(); }
+
         public TicketStateEnum State { get; set; } = TicketStateEnum.SinResultado;
 
+        public string TicketState { get => State.GetDisplayName(); }
         
 
         [StringLength(50)]

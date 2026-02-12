@@ -33,6 +33,7 @@ namespace Rifas.Client.Models.DTOs
         public DateTime CreatedAt { get; set; }
 
         public TicketsDTO? Ticket { get; set; }
+        //public TicketsListadoDTO? Ticket { get; set; }
 
         public RaffleDTO? Raffle { get; set; }
 
