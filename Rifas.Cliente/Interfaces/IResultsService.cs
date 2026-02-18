@@ -12,5 +12,6 @@ namespace Rifas.Client.Interfaces
         Task<BaseResponse> EliminarAsync(long id);
         Task<ObtenerResultsResponse> ObtenerPorIdAsync(long id);
         Task<ListarResultsResponse> ListarAsync(ListarResultsRequest request);
+        Task<ObtenerResultResponse> ObtenerResult(long raffleId, int positionWin);
     }
 }

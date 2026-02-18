@@ -114,6 +114,14 @@ namespace Rifas.Client.Models.DTOs
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public CategoryDTO? Category { get; set; }
 
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<TicketsDTO>? Tickets { get; set; }
+
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<PurchaseDTO>? Purchases { get; set; }
+
         /// <summary>
         /// indica si la rifa está activa
         /// </summary>

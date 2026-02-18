@@ -103,7 +103,7 @@ namespace Rifas.Client.Entities
         /// <summary>
         /// navegación a la categoría
         /// </summary>
-        public virtual CategoryEntity? CategoryEntity { get; set; }
+        public virtual CategoryEntity? CategoryEntity { get; set; }         
 
         /// <summary>
         /// indica si la rifa está activa

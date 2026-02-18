@@ -4,6 +4,7 @@ using Rifas.Client.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 
 namespace Rifas.Client.Mappers
 {
@@ -35,11 +36,13 @@ namespace Rifas.Client.Mappers
                 Organizer = src.Organizer,
                 OrganizerRating = src.OrganizerRating,
                 OrganizerRatingCount = src.OrganizerRatingCount,
-                Category = src.CategoryEntity?.ToDto(),
+                Category = src.CategoryEntity?.ToDto(),  
+                Tickets = src.Tickets?.ToDtoList(),
+                //Purchases = src.Purchases?.ToDtoList(),
                 IsActive = src.IsActive,
                 CreatedAt = src.CreatedAt.ToUniversalTime(),
                 StartedAt = src.StartedAt.HasValue ? src.StartedAt.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),
-                EndAt = src.EndAt.HasValue ? src.EndAt.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime()
+                EndAt = src.EndAt.HasValue ? src.EndAt.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),                
             };
         }
 
@@ -69,6 +72,8 @@ namespace Rifas.Client.Mappers
                 OrganizerRating = src.OrganizerRating,
                 OrganizerRatingCount = src.OrganizerRatingCount,
                 Category = src.Category != null ? src.Category.Id ?? 0 : 0,
+                Tickets = src.Tickets?.ToEntityList(),
+                Purchases = src.Purchases?.ToEntityList(),
                 IsActive = src.IsActive,
                 CreatedAt = src.CreatedAt,
                 StartedAt = src.StartedAt,

@@ -21,25 +21,31 @@ namespace Rifas.Client.Modulos.Controllers
             _service = service;
         }
 
-        [HttpPost]
-        [ProducesResponseType(typeof(CrearResultsResponse), StatusCodes.Status201Created)]
-        public async Task<CrearResultsResponse> CrearAsync([FromBody] CrearResultsRequest request)
-            => await _service.CrearAsync(request);
+        //[HttpPost]
+        //[ProducesResponseType(typeof(CrearResultsResponse), StatusCodes.Status201Created)]
+        //public async Task<CrearResultsResponse> CrearAsync([FromBody] CrearResultsRequest request)
+        //    => await _service.CrearAsync(request);
 
-        [HttpPut]
-        [ProducesResponseType(typeof(ActualizarResultsResponse), StatusCodes.Status200OK)]
-        public async Task<ActualizarResultsResponse> ActualizarAsync([FromBody] ActualizarResultsRequest request)
-            => await _service.ActualizarAsync(request);
+        //[HttpPut]
+        //[ProducesResponseType(typeof(ActualizarResultsResponse), StatusCodes.Status200OK)]
+        //public async Task<ActualizarResultsResponse> ActualizarAsync([FromBody] ActualizarResultsRequest request)
+        //    => await _service.ActualizarAsync(request);
 
-        [HttpDelete("{id:long}")]
-        [ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
-        public async Task<BaseResponse> EliminarAsync([FromRoute] long id)
-            => await _service.EliminarAsync(id);
+        //[HttpDelete("{id:long}")]
+        //[ProducesResponseType(typeof(BaseResponse), StatusCodes.Status200OK)]
+        //public async Task<BaseResponse> EliminarAsync([FromRoute] long id)
+        //    => await _service.EliminarAsync(id);
 
         [HttpGet("{id:long}")]
         [ProducesResponseType(typeof(ObtenerResultsResponse), StatusCodes.Status200OK)]
         public async Task<ObtenerResultsResponse> ObtenerPorIdAsync([FromRoute] long id)
             => await _service.ObtenerPorIdAsync(id);
+
+
+        [HttpGet("ObtenerResultado/{raffleId:long}/{positionWin:int}")]
+        [ProducesResponseType(typeof(ObtenerResultResponse), StatusCodes.Status200OK)]
+        public async Task<ObtenerResultResponse> ObtenerPorSorteoAsync([FromRoute] long raffleId, [FromRoute] int positionWin)
+            => await _service.ObtenerResult(raffleId, positionWin);
 
         [HttpPost("Listar")]
         [AllowAnonymous]

@@ -387,7 +387,12 @@ namespace Rifas.Client.Modulos.Services
             try
             {
                 // incluir CategoryEntity para que la navegación esté poblada
-                var entity = await _repository.AllNoTracking().Include(x => x.CategoryEntity).FirstOrDefaultAsync(x => x.Id == id);
+                var entity = await _repository
+                    .AllNoTracking()
+                    .Include(x => x.CategoryEntity)
+                    .Include(x => x.Tickets)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
                 if (entity == null)
                 {
                     return new ObtenerRafflePorIdResponse
@@ -587,6 +592,7 @@ namespace Rifas.Client.Modulos.Services
                 // paginación y ordenación
                 var lista = await query
                     .Include(x => x.CategoryEntity)
+                    .Include(x => x.Tickets)
                     .OrderByDescending(x => x.Id)
                     .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
                     .Take(request.RegistrosPorPagina.Value)

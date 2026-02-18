@@ -7,6 +7,7 @@ using Rifas.Client.Models.DTOs.Request;
 using Rifas.Client.Models.DTOs.Response;
 using Rifas.Client.Repositories.Interfaces;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -185,6 +186,91 @@ namespace Rifas.Client.Modulos.Services
                     CodigoError = "OBTENER_RESULTS_ERROR",
                     Errores = new[] { ex.Message }.ToList(),
                     Datos = null
+                };
+            }
+        }
+
+        public async Task<ObtenerResultResponse> ObtenerResult(long raffleId, int positionWin)
+        {
+            try
+            {
+                if (positionWin < 1 || positionWin > 3)
+                {
+                    return new ObtenerResultResponse
+                    {
+                        EsExitoso = false,
+                        Mensaje = "La posición de ganancia debe ser entre 1 y 3",
+                        CodigoError = "OBTENER_RESULT_INVALID_POSITION",
+                        Datos = null
+                    };
+                }
+
+                // obtener el último resultado para la rifa (por fecha de sorteo)
+                var lastResult = await _repository.AllNoTracking()
+                    .Where(r => r.RaffleId == raffleId)
+                    .OrderByDescending(r => r.LotteryDate)
+                    .FirstOrDefaultAsync();
+
+                if (lastResult == null)
+                {
+                    return new ObtenerResultResponse
+                    {
+                        EsExitoso = false,
+                        Mensaje = "No se encontró ningún resultado para la rifa especificada",
+                        CodigoError = "OBTENER_RESULT_NOT_FOUND",
+                        Datos = null
+                    };
+                }
+
+                string? winnerNumber = null;
+
+                switch (positionWin)
+                {
+                    case 1:
+                        winnerNumber = lastResult.FirstPlace;
+                        break;
+                    case 2:
+                        winnerNumber = lastResult.SecondPlace;
+                        break;
+                    case 3:
+                        winnerNumber = lastResult.ThirdPlace;
+                        break;
+                    default:
+                        // por defecto retornamos el número ganador principal
+                        winnerNumber = lastResult.WinningNumber;
+                        break;
+                }
+
+                if (string.IsNullOrWhiteSpace(winnerNumber))
+                {
+                    return new ObtenerResultResponse
+                    {
+                        EsExitoso = false,
+                        Mensaje = "La posición solicitada no tiene valor en el último resultado",
+                        CodigoError = "OBTENER_RESULT_EMPTY",
+                        Datos = null
+                    };
+                }
+
+                return new ObtenerResultResponse
+                {
+                    EsExitoso = true,
+                    Mensaje = "Resultado obtenido correctamente",
+                    Datos = new ObtenerResultDTO
+                    {
+                        winnerNumber = winnerNumber
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+
+                return new ObtenerResultResponse
+                {
+                    EsExitoso = false,
+                    Mensaje = $"Error al obtener el result: {ex.Message}",
+                    CodigoError = "OBTENER_RESULT_ERROR",
+                    Errores = new[] { ex.Message }.ToList()
                 };
             }
         }
