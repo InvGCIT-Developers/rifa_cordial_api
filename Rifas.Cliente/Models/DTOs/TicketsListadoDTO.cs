@@ -27,6 +27,6 @@ namespace Rifas.Client.Models.DTOs
         //}
         public DateTime? PurchasedAt { get; set; }
 
-        public PurchaseDTO? Purchase { get; set; }
+        //public PurchaseDTO? Purchase { get; set; }
     }
 }

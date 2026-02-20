@@ -151,7 +151,7 @@ namespace Rifas.Client.Mappers
                 Note = src.StatusDescription,
                 Category = src.Raffle?.Category ?? 0,
                 RaffleName = src.Raffle?.Title ?? string.Empty,
-                Purchase = src.Purchase != null ? src.Purchase.ToDto() : null,
+                //Purchase = src.Purchase != null ? src.Purchase.ToDto() : null,
                 RaffleImage = src.Raffle?.ImageUrl ?? string.Empty,                
                 PurchasedAt = src.BuyedDate.HasValue ? src.BuyedDate.Value.ToUniversalTime() : DateTime.MinValue.ToUniversalTime(),
                 PurchaseId = src.PurchaseId
@@ -258,6 +258,21 @@ namespace Rifas.Client.Mappers
             };
         }
 
+        public static PurchaseListarDTO ToListarDto(this PurchaseEntity src)
+        {
+            if (src == null) return new PurchaseListarDTO();
+            return new PurchaseListarDTO    
+            {
+                Id = src.Id,
+                UserId = src.UserId,
+                RaffleId = src.RaffleId,
+                Quantity = src.Quantity,
+                TotalAmount = src.TotalAmount,
+                PurchaseDate = src.PurchaseDate.ToUniversalTime(),
+                IsActive = src.IsActive,                
+            };
+        }
+
         public static PurchaseEntity ToEntity(this PurchaseDTO src)
         {
             if (src == null) return new PurchaseEntity();
@@ -274,8 +289,8 @@ namespace Rifas.Client.Mappers
             };
         }
 
-        public static List<PurchaseDTO> ToDtoList(this IEnumerable<PurchaseEntity> source)
-            => source?.Select(x => x.ToDto()).ToList() ?? new List<PurchaseDTO>();
+        public static List<PurchaseListarDTO> ToDtoList(this IEnumerable<PurchaseEntity> source)
+            => source?.Select(x => x.ToListarDto()).ToList() ?? new List<PurchaseListarDTO>();
 
         public static List<PurchaseEntity> ToEntityList(this IEnumerable<PurchaseDTO> source)
             => source?.Select(x => x.ToEntity()).ToList() ?? new List<PurchaseEntity>();

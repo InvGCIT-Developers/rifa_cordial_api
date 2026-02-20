@@ -3,7 +3,7 @@ using Rifas.Client.Models.DTOs;
 
 namespace Rifas.Client.Models.DTOs.Response
 {
-    public class ListarPurchaseResponse : ListadoBaseResponse<PurchaseDTO>
+    public class ListarPurchaseResponse : ListadoBaseResponse<PurchaseListarDTO>
     {
     }
 }

@@ -393,19 +393,19 @@ namespace Rifas.Client.Modulos.Services
                         Status = x.Ticket.Status.GetDisplayName(),
                         State = x.Ticket.State.GetDisplayName(),
                         PurchasedAt = x.Ticket.BuyedDate,
-                        Purchase = x.Ticket.PurchaseId != null ? _purchaserepository.AllNoTracking()
-                            .Where(p => p.Id == x.Ticket.PurchaseId)
-                            .Select(p => new PurchaseDTO
-                            {
-                                Id = p.Id,
-                                UserId = p.UserId,
-                                TotalAmount = p.TotalAmount,
-                                Quantity = p.Quantity,
-                                RaffleId = p.RaffleId,                                
-                                PurchaseDate = p.PurchaseDate,
-                                IsActive = p.IsActive
-                            })
-                            .FirstOrDefault() : null
+                        //Purchase = x.Ticket.PurchaseId != null ? _purchaserepository.AllNoTracking()
+                        //    .Where(p => p.Id == x.Ticket.PurchaseId)
+                        //    .Select(p => new PurchaseDTO
+                        //    {
+                        //        Id = p.Id,
+                        //        UserId = p.UserId,
+                        //        TotalAmount = p.TotalAmount,
+                        //        Quantity = p.Quantity,
+                        //        RaffleId = p.RaffleId,                                
+                        //        PurchaseDate = p.PurchaseDate,
+                        //        IsActive = p.IsActive
+                        //    })
+                        //    .FirstOrDefault() : null
                     })
                     .ToListAsync();
 
