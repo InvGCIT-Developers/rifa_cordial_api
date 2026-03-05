@@ -158,7 +158,11 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var entity = await _repository.GetByIdAsync(id);
+                //var entity = await _repository.GetByIdAsync(id);
+                var entity = await _repository
+                    .AllNoTracking(x => x.Id == id)
+                    .Include(r => r.Ticket)
+                    .FirstOrDefaultAsync();
                 if (entity == null)
                 {
                     return new ObtenerResultsResponse
