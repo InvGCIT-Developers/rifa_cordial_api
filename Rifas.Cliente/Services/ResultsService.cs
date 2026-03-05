@@ -163,22 +163,25 @@ namespace Rifas.Client.Modulos.Services
                     .AllNoTracking(x => x.Id == id)
                     .Include(r => r.Ticket)
                     .FirstOrDefaultAsync();
+
                 if (entity == null)
                 {
                     return new ObtenerResultsResponse
                     {
-                        EsExitoso = false,
-                        Mensaje = "Result no encontrado",
-                        CodigoError = "OBTENER_RESULTS_NOT_FOUND",
+                        EsExitoso = true,
+                        Mensaje = "no existen resultados",
+                        CodigoError = "",
                         Datos = null
                     };
                 }
+
+                //.Where(r => (r.Ticket.State == Common.TicketStateEnum.Ganador || r.Ticket.State == Common.TicketStateEnum.PrimerLugar || r.Ticket.State == Common.TicketStateEnum.SegundoLugar || r.Ticket.State == Common.TicketStateEnum.TercerLugar))
 
                 return new ObtenerResultsResponse
                 {
                     EsExitoso = true,
                     Mensaje = "Result obtenido correctamente",
-                    Datos = entity.ToDto()
+                    Datos = entity.ToWinnersDto()
                 };
             }
             catch (Exception ex)

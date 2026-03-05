@@ -316,6 +316,26 @@ namespace Rifas.Client.Mappers
             };
         }
 
+        public static ResultsDTO ToWinnersDto(this ResultsEntity src)
+        {
+            if (src == null) return new ResultsDTO();
+            return new ResultsDTO
+            {
+                Id = src.Id,
+                RaffleId = src.RaffleId,
+                RaffleNumber = src.RaffleNumber,
+                WinningNumber = src.WinningNumber,
+                FirstPlace = src.FirstPlace,
+                SecondPlace = src.SecondPlace,
+                ThirdPlace = src.ThirdPlace,
+                IsActive = src.IsActive,
+                LotteryDate = src.LotteryDate.ToUniversalTime(),
+                CreatedAt = src.CreatedAt.ToUniversalTime(),
+                Raffle = src.Raffle?.ToDto(),
+                Ticket = (src.Ticket.State == TicketStateEnum.Ganador || src.Ticket.State == TicketStateEnum.PrimerLugar || src.Ticket.State == TicketStateEnum.SegundoLugar || src.Ticket.State == TicketStateEnum.TercerLugar) ? src.Ticket?.ToDto() : null,
+            };
+        }
+
         public static ResultsEntity ToEntity(this ResultsDTO src)
         {
             if (src == null) return new ResultsEntity();
