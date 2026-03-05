@@ -264,11 +264,7 @@ namespace Rifas.Worker.Services
                         //en ticketsEntity , actualizar el estado de los tickets del raffle indicando si es ganador, primer lugar, segundo lugar, tercer lugar
                         var tickets = await ticketsRepo.AllNoTracking()
                             .Where(t => t.RaffleId == raffle.Id
-                            //&&
-                            //(t.TicketNumber == numericWinning ||
-                            //t.TicketNumber.ToString().PadLeft(level, '0') == FirstPlace ||
-                            //t.TicketNumber.ToString().PadLeft(level, '0') == SecondPlace ||
-                            //t.TicketNumber.ToString().PadLeft(level, '0') == ThirdPlace)
+                            
                             && t.Status != TicketStatusEnum.Cancelado
                             && t.PurchaseId != null
                             )
@@ -277,11 +273,12 @@ namespace Rifas.Worker.Services
                         foreach (var ticket in tickets)
                         {
 
-                            if (ticket.TicketNumber == long.Parse(winningNumber))
-                            {
-                                ticket.State = TicketStateEnum.Ganador;
-                            }
-                            else if (ticket.TicketNumber == long.Parse(FirstPlace))
+                            //if (ticket.TicketNumber == long.Parse(winningNumber))
+                            //{
+                            //    ticket.State = TicketStateEnum.Ganador;
+                            //}
+                            //else 
+                            if (ticket.TicketNumber == long.Parse(FirstPlace))
                                 ticket.State = TicketStateEnum.PrimerLugar;
                             else if (ticket.TicketNumber == long.Parse(SecondPlace))
                                 ticket.State = TicketStateEnum.SegundoLugar;
@@ -292,16 +289,16 @@ namespace Rifas.Worker.Services
 
                             await ticketsRepo.UpdateAsync(ticket);
 
-
+                            
                             var resultEntity = new ResultsEntity
                             {
                                 RaffleId = raffle.Id,
                                 RaffleNumber = raffle.RaffleNumber,
                                 TicketId = ticket.Id,
-                                WinningNumber = winningNumber,
-                                FirstPlace = FirstPlace,
-                                SecondPlace = SecondPlace,
-                                ThirdPlace = ThirdPlace,
+                                WinningNumber = "",
+                                FirstPlace =  FirstPlace ,
+                                SecondPlace = raffle.WinnersNumber >= 2 &&  raffle.WinnersNumber <=3 ? SecondPlace : "",
+                                ThirdPlace = raffle.WinnersNumber==3 ? ThirdPlace : "",
                                 IsActive = true,
                                 LotteryDate = now,
                                 CreatedAt = now

@@ -15,8 +15,8 @@ namespace Rifas.Client.Models.DTOs
 
         public long? TicketId { get; set; }        
 
-        [StringLength(6)]
-        public string WinningNumber { get; set; } = null!;
+        //[StringLength(6)]
+        //public string WinningNumber { get; set; } = null!;
 
         [StringLength(6)]
         public string? FirstPlace { get; set; }
