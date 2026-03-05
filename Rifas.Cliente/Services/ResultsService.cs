@@ -162,6 +162,7 @@ namespace Rifas.Client.Modulos.Services
                 var entity = await _repository
                     .AllNoTracking(x => x.Id == id)
                     .Include(r => r.Ticket)
+                    .Include(r => r.Raffle)
                     .FirstOrDefaultAsync();
 
                 if (entity == null)
