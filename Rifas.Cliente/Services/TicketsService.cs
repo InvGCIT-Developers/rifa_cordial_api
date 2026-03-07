@@ -313,7 +313,7 @@ namespace Rifas.Client.Modulos.Services
                             case "purchasedatdesde":
                                 if (DateTime.TryParse(valor, out var fromDt))
                                 {
-                                    joined = joined.Where(x => x.Ticket.BuyedDate != null && x.Ticket.BuyedDate >= fromDt);
+                                    joined = joined.Where(x => x.Ticket.BuyedDate != null && x.Ticket.BuyedDate.Value.Date >= fromDt.Date);
                                 }
                                 break;
 
@@ -324,7 +324,7 @@ namespace Rifas.Client.Modulos.Services
                             case "purchasedathasta":
                                 if (DateTime.TryParse(valor, out var toDt))
                                 {
-                                    joined = joined.Where(x => x.Ticket.BuyedDate != null && x.Ticket.BuyedDate <= toDt);
+                                    joined = joined.Where(x => x.Ticket.BuyedDate != null && x.Ticket.BuyedDate.Value.Date <= toDt.Date);
                                 }
                                 break;
                             case "purchaseid":
@@ -332,6 +332,26 @@ namespace Rifas.Client.Modulos.Services
                                 if (long.TryParse(valor, out var pId))
                                 {
                                     joined = joined.Where(x => x.Ticket.PurchaseId == pId);
+                                }
+                                break;
+                            case "createdatfrom":
+                            case "created_from":
+                            case "createdfrom":
+                            case "createdatdesde":
+                            case "creado_desde":
+                                if (DateTime.TryParse(valor, out var createdFrom))
+                                {
+                                    joined = joined.Where(x => x.Ticket.CreatedAt != null && x.Ticket.CreatedAt.Date >= createdFrom.Date);
+                                }
+                                break;
+                            case "createdatto":
+                            case "created_to":
+                            case "createdto":
+                            case "createdathasta":
+                            case "creado_hasta":
+                                if (DateTime.TryParse(valor, out var createdTo))
+                                {
+                                    joined = joined.Where(x => x.Ticket.CreatedAt != null && x.Ticket.CreatedAt.Date <= createdTo.Date);
                                 }
                                 break;
 

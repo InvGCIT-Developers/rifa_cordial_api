@@ -1,7 +1,9 @@
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using System.Globalization;
 using GCIT.Core.Models.Base;
 using Rifas.Client.Repositories.Interfaces;
 using Rifas.Client.Models.DTOs.Request;
@@ -47,7 +49,7 @@ namespace Rifas.Client.Modulos.Services
                 return new CrearTransactionsResponse
                 {
                     EsExitoso = true,
-                    Mensaje = "Transacción creada correctamente",
+                    Mensaje = "Transaccin creada correctamente",
                     Datos = entity.ToDto()
                 };
             }
@@ -56,7 +58,7 @@ namespace Rifas.Client.Modulos.Services
                 return new CrearTransactionsResponse
                 {
                     EsExitoso = false,
-                    Mensaje = $"Error al crear la transacción: {ex.Message}",
+                    Mensaje = $"Error al crear la transaccin: {ex.Message}",
                     CodigoError = "CREAR_TRANSACTION_ERROR",
                     Errores = new[] { ex.Message }.ToList(),
                     Datos = null
@@ -74,7 +76,7 @@ namespace Rifas.Client.Modulos.Services
                     return new ObtenerTransactionsResponse
                     {
                         EsExitoso = false,
-                        Mensaje = "Transacción no encontrada",
+                        Mensaje = "Transaccin no encontrada",
                         CodigoError = "OBTENER_TRANSACTION_NOT_FOUND",
                         Datos = null
                     };
@@ -83,7 +85,7 @@ namespace Rifas.Client.Modulos.Services
                 return new ObtenerTransactionsResponse
                 {
                     EsExitoso = true,
-                    Mensaje = "Transacción obtenida correctamente",
+                    Mensaje = "Transaccin obtenida correctamente",
                     Datos = entity.ToDto()
                 };
             }
@@ -92,7 +94,7 @@ namespace Rifas.Client.Modulos.Services
                 return new ObtenerTransactionsResponse
                 {
                     EsExitoso = false,
-                    Mensaje = $"Error al obtener la transacción: {ex.Message}",
+                    Mensaje = $"Error al obtener la transaccin: {ex.Message}",
                     CodigoError = "OBTENER_TRANSACTION_ERROR",
                     Errores = new[] { ex.Message }.ToList(),
                     Datos = null
@@ -104,18 +106,150 @@ namespace Rifas.Client.Modulos.Services
         {
             try
             {
-                var lista = await _repository
-                        .AllNoTracking()
-                        .Take(request.RegistrosPorPagina.Value)
-                        .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
-                        .ToListAsync();
+                var query = _repository.AllNoTracking();
+
+                // aplicar filtros opcionales si vienen en request.Filtros
+                if (request?.Filtros != null && request.Filtros.Any())
+                {
+                    foreach (var filtro in request.Filtros)
+                    {
+                        if (filtro == null) continue;
+
+                        var fType = filtro.GetType();
+                        var campoProp = fType.GetProperty("Campo") ?? fType.GetProperty("Field") ?? fType.GetProperty("Name") ?? fType.GetProperty("Key");
+                        var valorProp = fType.GetProperty("Valor") ?? fType.GetProperty("Value") ?? fType.GetProperty("Val");
+
+                        var campo = campoProp?.GetValue(filtro)?.ToString();
+                        var valor = valorProp?.GetValue(filtro)?.ToString();
+
+                        if (string.IsNullOrWhiteSpace(campo) || valor == null) continue;
+
+                        switch (campo.Trim().ToLowerInvariant())
+                        {
+                            case "raffleid":
+                            case "raffle_id":
+                                if (long.TryParse(valor, out var rId))
+                                    query = query.Where(x => x.RaffleId == rId);
+                                break;
+
+                            case "ticketnumber":
+                            case "ticket_number":
+                                if (long.TryParse(valor, out var tnum))
+                                    query = query.Where(x => x.TicketNumber == tnum);
+                                break;
+
+                            case "userid":
+                            case "user_id":
+                                if (long.TryParse(valor, out var uId))
+                                    query = query.Where(x => x.UserId == uId);
+                                break;
+
+                            case "agenteid":
+                            case "agente_id":
+                                if (long.TryParse(valor, out var aId))
+                                    query = query.Where(x => x.AgenteId == aId);
+                                break;
+
+                            case "action":
+                            case "accion":
+                                query = query.Where(x => x.Action != null && x.Action.Contains(valor));
+                                break;
+
+                            case "user":
+                            case "username":
+                            case "usuario":
+                                query = query.Where(x => x.User != null && x.User.Contains(valor));
+                                break;
+
+                            case "agente":
+                                query = query.Where(x => x.Agente != null && x.Agente.Contains(valor));
+                                break;
+
+                            case "ip":
+                                query = query.Where(x => x.IP != null && x.IP.Contains(valor));
+                                break;
+
+                            case "datefrom":
+                            case "date_from":
+                            case "fechadesde":
+                            case "datedesde":
+                                if (DateTime.TryParse(valor, out var fromDt))
+                                    query = query.Where(x => x.Date.Date >= fromDt.Date);
+                                break;
+
+                            case "dateto":
+                            case "date_to":
+                            case "fechahasta":
+                            case "datehasta":
+                                if (DateTime.TryParse(valor, out var toDt))
+                                    query = query.Where(x => x.Date.Date <= toDt.Date);
+                                break;
+
+                            case "createdatfrom":
+                            case "created_from":
+                            case "createdfrom":
+                            case "createdatdesde":
+                            case "creado_desde":
+                                if (DateTime.TryParse(valor, out var createdFrom))
+                                    query = query.Where(x => x.CreatedAt.Date >= createdFrom.Date);
+                                break;
+
+                            case "createdatto":
+                            case "created_to":
+                            case "createdto":
+                            case "createdathasta":
+                            case "creado_hasta":
+                                if (DateTime.TryParse(valor, out var createdTo))
+                                    query = query.Where(x => x.CreatedAt.Date <= createdTo.Date);
+                                break;
+
+                            case "description":
+                            case "descripcion":
+                                query = query.Where(x => x.Description != null && x.Description.Contains(valor));
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                // bsqueda global opcional
+                if (!string.IsNullOrWhiteSpace(request?.Buscar))
+                {
+                    var term = request.Buscar.Trim();
+                    var isLong = long.TryParse(term, out var termLong);
+                    var isDecimal = decimal.TryParse(term, NumberStyles.Any, CultureInfo.InvariantCulture, out var termDecimal);
+                    var isDate = DateTime.TryParse(term, out var termDate);
+
+                    query = query.Where(x =>
+                        (x.User != null && EF.Functions.Like(x.User, $"%{term}%")) ||
+                        (x.Agente != null && EF.Functions.Like(x.Agente, $"%{term}%")) ||
+                        (x.IP != null && EF.Functions.Like(x.IP, $"%{term}%")) ||
+                        (x.Action != null && EF.Functions.Like(x.Action, $"%{term}%")) ||
+                        (x.Description != null && EF.Functions.Like(x.Description, $"%{term}%")) ||
+                        (x.Transaction != null && EF.Functions.Like(x.Transaction, $"%{term}%")) ||
+                        (isLong && (x.Id == termLong || x.RaffleId == termLong || x.TicketNumber == termLong || x.UserId == termLong || x.AgenteId == termLong)) ||
+                        (isDecimal && x.Amount != null && x.Amount == termDecimal) ||
+                        (isDate && x.Date.Date   >= termDate.Date && x.Date.Date < termDate.AddDays(1).Date) ||
+                        (isDate && x.CreatedAt.Date >= termDate.Date && x.CreatedAt.Date < termDate.AddDays(1).Date)
+                    );
+                }
+
+                var totalElementos = await query.CountAsync();
+
+                var lista = await query
+                    .OrderByDescending(x => x.Id)
+                    .Skip((request.Pagina.Value - 1) * request.RegistrosPorPagina.Value)
+                    .Take(request.RegistrosPorPagina.Value)
+                    .ToListAsync();
 
                 return new ListarTransactionsResponse
                 {
                     EsExitoso = true,
-                    TotalElementos = lista.Count,
+                    TotalElementos = totalElementos,
                     TamanoPagina = request.RegistrosPorPagina.Value,
-                    TotalPaginas = (int)Math.Ceiling((double)lista.Count / request.RegistrosPorPagina.Value),
+                    TotalPaginas = (int)Math.Ceiling((double)totalElementos / request.RegistrosPorPagina.Value),
                     Pagina = request.Pagina.Value,
                     FiltrosAplicados = request.Filtros,
                     OrdenarPor = "Id",

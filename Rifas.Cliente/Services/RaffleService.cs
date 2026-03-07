@@ -490,7 +490,7 @@ namespace Rifas.Client.Modulos.Services
                             case "creado_desde":
                                 if (DateTime.TryParse(valor, out var createdFrom))
                                 {
-                                    query = query.Where(x => x.CreatedAt >= createdFrom);
+                                    query = query.Where(x => x.CreatedAt.Date >= createdFrom.Date);
                                 }
                                 break;
 
@@ -501,7 +501,7 @@ namespace Rifas.Client.Modulos.Services
                             case "creado_hasta":
                                 if (DateTime.TryParse(valor, out var createdTo))
                                 {
-                                    query = query.Where(x => x.CreatedAt <= createdTo);
+                                    query = query.Where(x => x.CreatedAt.Date <= createdTo.Date);
                                 }
                                 break;
 
@@ -510,7 +510,7 @@ namespace Rifas.Client.Modulos.Services
                             case "endfrom":
                                 if (DateTime.TryParse(valor, out var endFrom))
                                 {
-                                    query = query.Where(x => x.EndAt != null && x.EndAt >= endFrom);
+                                    query = query.Where(x => x.EndAt != null && x.EndAt.Value.Date >= endFrom.Date);
                                 }
                                 break;
 
@@ -519,7 +519,24 @@ namespace Rifas.Client.Modulos.Services
                             case "endto":
                                 if (DateTime.TryParse(valor, out var endTo))
                                 {
-                                    query = query.Where(x => x.EndAt != null && x.EndAt <= endTo);
+                                    query = query.Where(x => x.EndAt != null && x.EndAt.Value.Date <= endTo.Date);
+                                }
+                                break;
+                            case "startAtTo":
+                            case "start_at_to":
+                            case "startto":
+                                if (DateTime.TryParse(valor, out var startTo))
+                                {
+                                    query = query.Where(x => x.StartedAt != null && x.StartedAt.Value.Date <= startTo.Date);
+                                }
+                                break;
+
+                            case "startAtFrom":
+                            case "start_at_from":
+                            case "startfrom":
+                                if (DateTime.TryParse(valor, out var startFrom))
+                                {
+                                    query = query.Where(x => x.StartedAt != null && x.StartedAt.Value.Date >= startFrom.Date);
                                 }
                                 break;
 
@@ -581,8 +598,8 @@ namespace Rifas.Client.Modulos.Services
                         (isDecimal && x.Price != null && x.Price == termDecimal) ||
 
                         // búsquedas por fecha aproximada (día)
-                        (isDate && x.CreatedAt >= termDate && x.CreatedAt < termDate.AddDays(1)) ||
-                        (isDate && x.EndAt != null && x.EndAt >= termDate && x.EndAt < termDate.AddDays(1))
+                        (isDate && x.CreatedAt.Date >= termDate && x.CreatedAt.Date < termDate.AddDays(1).Date) ||
+                        (isDate && x.EndAt != null && x.EndAt.Value.Date >= termDate && x.EndAt.Value.Date < termDate.AddDays(1).Date)
                     );
                 }
 

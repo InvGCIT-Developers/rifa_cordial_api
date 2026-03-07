@@ -341,13 +341,34 @@ namespace Rifas.Client.Modulos.Services
                             case "lotterydatefrom":
                             case "lottery_from":
                                 if (DateTime.TryParse(valor, out var fromDt))
-                                    query = query.Where(x => x.LotteryDate >= fromDt);
+                                    query = query.Where(x => x.LotteryDate.Date >= fromDt.Date);
                                 break;
 
                             case "lotterydateto":
                             case "lottery_to":
                                 if (DateTime.TryParse(valor, out var toDt))
-                                    query = query.Where(x => x.LotteryDate <= toDt);
+                                    query = query.Where(x => x.LotteryDate.Date <= toDt.Date);
+                                break;
+                            case "createdatfrom":
+                            case "created_from":
+                            case "createdfrom":
+                            case "createdatdesde":
+                            case "creado_desde":
+                                if (DateTime.TryParse(valor, out var createdFrom))
+                                {
+                                    query = query.Where(x => x.CreatedAt.Date >= createdFrom.Date);
+                                }
+                                break;
+
+                            case "createdatto":
+                            case "created_to":
+                            case "createdto":
+                            case "createdathasta":
+                            case "creado_hasta":
+                                if (DateTime.TryParse(valor, out var createdTo))
+                                {
+                                    query = query.Where(x => x.CreatedAt.Date <= createdTo.Date);
+                                }
                                 break;
 
                             default:
@@ -373,7 +394,8 @@ namespace Rifas.Client.Modulos.Services
                         (x.ThirdPlace != null && EF.Functions.Like(x.ThirdPlace, $"%{term}%")) ||
                         (isLong && x.Id == termLong) ||
                         (isLong && x.RaffleId == termLong) ||
-                        (isDate && x.LotteryDate >= termDate && x.LotteryDate < termDate.AddDays(1)) ||
+                        (isDate && x.LotteryDate.Date >= termDate && x.LotteryDate.Date < termDate.AddDays(1).Date) ||
+                        (isDate && x.CreatedAt.Date >= termDate && x.CreatedAt.Date < termDate.AddDays(1).Date) ||
                         (!isDecimal && x.IsActive.ToString().Contains(term))
                     );
                 }
