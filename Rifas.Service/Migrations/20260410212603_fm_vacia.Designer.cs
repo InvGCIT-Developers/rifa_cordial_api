@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rifas.Client.Data;
 
 #nullable disable
 
-namespace Rifas.Client.Migrations
+namespace Rifas.Service.Migrations
 {
     [DbContext(typeof(RifasContext))]
-    partial class RifasContextModelSnapshot : ModelSnapshot
+    [Migration("20260410212603_fm_vacia")]
+    partial class fm_vacia
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

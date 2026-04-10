@@ -24,11 +24,11 @@ namespace Rifas.Service.Migrations
 
             modelBuilder.Entity("Rifas.Client.Entities.CategoryEntity", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -37,6 +37,11 @@ namespace Rifas.Service.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -76,6 +81,8 @@ namespace Rifas.Service.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RaffleId");
+
                     b.ToTable("Purchases");
                 });
 
@@ -93,8 +100,8 @@ namespace Rifas.Service.Migrations
                     b.Property<int?>("BottomNumber")
                         .HasColumnType("int");
 
-                    b.Property<long>("Category")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -162,6 +169,9 @@ namespace Rifas.Service.Migrations
                     b.Property<int>("TotalTickets")
                         .HasColumnType("int");
 
+                    b.Property<int?>("WinnersNumber")
+                        .HasColumnType("int");
+
                     b.Property<int>("level")
                         .HasColumnType("int");
 
@@ -209,12 +219,21 @@ namespace Rifas.Service.Migrations
                         .HasMaxLength(6)
                         .HasColumnType("nvarchar(6)");
 
+                    b.Property<long?>("TicketId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("WinningNumber")
                         .IsRequired()
                         .HasMaxLength(6)
                         .HasColumnType("nvarchar(6)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RaffleId");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique()
+                        .HasFilter("[TicketId] IS NOT NULL");
 
                     b.ToTable("Results");
                 });
@@ -340,6 +359,17 @@ namespace Rifas.Service.Migrations
                     b.ToTable("Transactions");
                 });
 
+            modelBuilder.Entity("Rifas.Client.Entities.PurchaseEntity", b =>
+                {
+                    b.HasOne("Rifas.Client.Entities.RaffleEntity", "Raffle")
+                        .WithMany("Purchases")
+                        .HasForeignKey("RaffleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Raffle");
+                });
+
             modelBuilder.Entity("Rifas.Client.Entities.RaffleEntity", b =>
                 {
                     b.HasOne("Rifas.Client.Entities.CategoryEntity", "CategoryEntity")
@@ -351,6 +381,24 @@ namespace Rifas.Service.Migrations
                     b.Navigation("CategoryEntity");
                 });
 
+            modelBuilder.Entity("Rifas.Client.Entities.ResultsEntity", b =>
+                {
+                    b.HasOne("Rifas.Client.Entities.RaffleEntity", "Raffle")
+                        .WithMany("Results")
+                        .HasForeignKey("RaffleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Rifas.Client.Entities.TicketsEntity", "Ticket")
+                        .WithOne()
+                        .HasForeignKey("Rifas.Client.Entities.ResultsEntity", "TicketId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Raffle");
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("Rifas.Client.Entities.TicketsEntity", b =>
                 {
                     b.HasOne("Rifas.Client.Entities.PurchaseEntity", "Purchase")
@@ -358,11 +406,28 @@ namespace Rifas.Service.Migrations
                         .HasForeignKey("PurchaseId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Rifas.Client.Entities.RaffleEntity", "Raffle")
+                        .WithMany("Tickets")
+                        .HasForeignKey("RaffleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Purchase");
+
+                    b.Navigation("Raffle");
                 });
 
             modelBuilder.Entity("Rifas.Client.Entities.PurchaseEntity", b =>
                 {
+                    b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Rifas.Client.Entities.RaffleEntity", b =>
+                {
+                    b.Navigation("Purchases");
+
+                    b.Navigation("Results");
+
                     b.Navigation("Tickets");
                 });
 #pragma warning restore 612, 618
